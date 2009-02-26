@@ -1,7 +1,0 @@
-Testsuite: org.intalio.tempo.web.LoginFilterTest
-Tests run: 4, Failures: 0, Errors: 0, Time elapsed: 0.901 sec
-
-Testcase: testDoFilterWithContextSingleLogin took 0.638 sec
-Testcase: testDoFilterWithSecure took 0.076 sec
-Testcase: testDoFilterWithContextButNoUser took 0.077 sec
-Testcase: testDoFilterLogin took 0.081 sec

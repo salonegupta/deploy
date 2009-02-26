@@ -1,4 +1,0 @@
-Testsuite: org.intalio.tempo.security.impl.TokenTest
-Tests run: 1, Failures: 0, Errors: 0, Time elapsed: 0.058 sec
-
-Testcase: testToken took 0.054 sec

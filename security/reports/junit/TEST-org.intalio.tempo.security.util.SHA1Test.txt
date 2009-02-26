@@ -1,4 +1,0 @@
-Testsuite: org.intalio.tempo.security.util.SHA1Test
-Tests run: 1, Failures: 0, Errors: 0, Time elapsed: 0.01 sec
-
-Testcase: testEncode took 0.006 sec

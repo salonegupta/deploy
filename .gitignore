@@ -1,0 +1,7 @@
+target
+reports
+derby.log
+.classpath
+.project
+.metadata
+

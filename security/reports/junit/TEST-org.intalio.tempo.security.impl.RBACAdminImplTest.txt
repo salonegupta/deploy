@@ -1,4 +1,0 @@
-Testsuite: org.intalio.tempo.security.impl.RBACAdminImplTest
-Tests run: 1, Failures: 0, Errors: 0, Time elapsed: 0.288 sec
-
-Testcase: testAll took 0.271 sec
