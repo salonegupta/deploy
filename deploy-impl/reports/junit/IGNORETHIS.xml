@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="1" failures="0" hostname="Sean-KUbuntu" name="org.intalio.tempo.deployment.impl.DeployServiceDeployTest" tests="1" time="0.0" timestamp="2009-02-26T17:29:12">
+  <properties>
+    <property name="java.runtime.name" value="Java(TM) 2 Runtime Environment, Standard Edition" />
+    <property name="sun.boot.library.path" value="/opt/jdk1.5.0_16/jre/lib/i386" />
+    <property name="java.vm.version" value="1.5.0_16-b02" />
+    <property name="ant.version" value="Apache Ant version 1.7.1 compiled on June 27 2008" />
+    <property name="ant.java.version" value="1.5" />
+    <property name="java.vm.vendor" value="Sun Microsystems Inc." />
+    <property name="java.vendor.url" value="http://java.sun.com/" />
+    <property name="path.separator" value=":" />
+    <property name="java.vm.name" value="Java HotSpot(TM) Client VM" />
+    <property name="file.encoding.pkg" value="sun.io" />
+    <property name="user.country" value="US" />
+    <property name="sun.os.patch.level" value="unknown" />
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification" />
+    <property name="user.dir" value="/git/deploy" />
+    <property name="java.runtime.version" value="1.5.0_16-b02" />
+    <property name="java.awt.graphicsenv" value="sun.awt.X11GraphicsEnvironment" />
+    <property name="basedir" value="/git/deploy" />
+    <property name="java.endorsed.dirs" value="/opt/jdk1.5.0_16/jre/lib/endorsed" />
+    <property name="os.arch" value="i386" />
+    <property name="java.io.tmpdir" value="/tmp" />
+    <property name="ant.core.lib" value="/home/sean/.m2/repository/org/apache/ant/ant/1.7.1/ant-1.7.1.jar" />
+    <property name="line.separator" value="
+" />
+    <property name="java.vm.specification.vendor" value="Sun Microsystems Inc." />
+    <property name="os.name" value="Linux" />
+    <property name="log4j.configuration" value="log4j.properties.junit" />
+    <property name="ant.project.name" value="junit" />
+    <property name="sun.jnu.encoding" value="UTF-8" />
+    <property name="java.library.path" value="/home/sean/sqllib/lib32" />
+    <property name="java.specification.name" value="Java Platform API Specification" />
+    <property name="java.class.version" value="49.0" />
+    <property name="sun.management.compiler" value="HotSpot Client Compiler" />
+    <property name="os.version" value="2.6.24-21-generic" />
+    <property name="user.home" value="/home/sean" />
+    <property name="user.timezone" value="America/Los_Angeles" />
+    <property name="java.awt.printerjob" value="sun.print.PSPrinterJob" />
+    <property name="java.specification.version" value="1.5" />
+    <property name="file.encoding" value="UTF-8" />
+    <property name="java.class.path" value="/home/sean/.m2/repository/org/apache/ant/ant/1.7.1/ant-1.7.1.jar:/home/sean/.m2/repository/org/apache/ant/ant-launcher/1.7.1/ant-launcher-1.7.1.jar:/home/sean/.m2/repository/org/apache/ant/ant-trax/1.7.1/ant-trax-1.7.1.jar:/usr/lib/ruby/gems/1.8/gems/buildr-1.3.4/lib/buildr/java:/home/sean/.m2/repository/commons-lang/commons-lang/2.3/commons-lang-2.3.jar:/home/sean/.m2/repository/commons-collections/commons-collections/3.2/commons-collections-3.2.jar:/home/sean/.m2/repository/org/apache/geronimo/specs/geronimo-jta_1.1_spec/1.1/geronimo-jta_1.1_spec-1.1.jar:/home/sean/.m2/repository/org/apache/geronimo/specs/geronimo-jms_1.1_spec/1.0.1/geronimo-jms_1.1_spec-1.0.1.jar:/home/sean/.m2/repository/org/apache/geronimo/specs/geronimo-jpa_3.0_spec/1.0/geronimo-jpa_3.0_spec-1.0.jar:/home/sean/.m2/repository/org/apache/openjpa/openjpa/1.1.0-645340/openjpa-1.1.0-645340.jar:/home/sean/.m2/repository/serp/serp/1.13.1/serp-1.13.1.jar:/home/sean/.m2/repository/commons-pool/commons-pool/1.4/commons-pool-1.4.jar:/home/sean/.m2/repository/commons-dbcp/commons-dbcp/1.2.2/commons-dbcp-1.2.2.jar:/home/sean/.m2/repository/org/apache/derby/derby/10.2.2.0/derby-10.2.2.0.jar:/opt/jdk1.5.0_16/lib/tools.jar:/home/sean/sqllib/java/db2java.zip:/home/sean/sqllib/java/db2jcc.jar:/home/sean/sqllib/java/sqlj.zip:/home/sean/sqllib/function:/home/sean/sqllib/java/db2jcc_license_cu.jar:." />
+    <property name="user.name" value="sean" />
+    <property name="java.vm.specification.version" value="1.0" />
+    <property name="java.home" value="/opt/jdk1.5.0_16/jre" />
+    <property name="sun.arch.data.model" value="32" />
+    <property name="java.specification.vendor" value="Sun Microsystems Inc." />
+    <property name="user.language" value="en" />
+    <property name="java.vm.info" value="mixed mode, sharing" />
+    <property name="java.version" value="1.5.0_16" />
+    <property name="java.ext.dirs" value="/opt/jdk1.5.0_16/jre/lib/ext" />
+    <property name="sun.boot.class.path" value="/opt/jdk1.5.0_16/jre/lib/rt.jar:/opt/jdk1.5.0_16/jre/lib/i18n.jar:/opt/jdk1.5.0_16/jre/lib/sunrsasign.jar:/opt/jdk1.5.0_16/jre/lib/jsse.jar:/opt/jdk1.5.0_16/jre/lib/jce.jar:/opt/jdk1.5.0_16/jre/lib/charsets.jar:/opt/jdk1.5.0_16/jre/classes" />
+    <property name="java.vendor" value="Sun Microsystems Inc." />
+    <property name="file.separator" value="/" />
+    <property name="java.vendor.url.bug" value="http://java.sun.com/cgi-bin/bugreport.cgi" />
+    <property name="sun.cpu.endian" value="little" />
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle" />
+    <property name="sun.cpu.isalist" value="" />
+  </properties>
+  <testcase classname="org.intalio.tempo.deployment.impl.DeployServiceDeployTest" name="testDeployZip" time="0.0">
+    <error message="Forked Java VM exited abnormally. Please note the time in the report does not reflect the time until the VM exit." type="junit.framework.AssertionFailedError">junit.framework.AssertionFailedError: Forked Java VM exited abnormally. Please note the time in the report does not reflect the time until the VM exit.
+</error>
+  </testcase>
+</testsuite>

@@ -1,0 +1,4 @@
+Testsuite: org.intalio.tempo.security.token.TokenContextTest
+Tests run: 1, Failures: 0, Errors: 0, Time elapsed: 0.006 sec
+
+Testcase: testStaticMethod took 0.001 sec

@@ -1,0 +1,6 @@
+Testsuite: org.intalio.tempo.web.Log4JConfigurationServletTest
+Tests run: 3, Failures: 0, Errors: 0, Time elapsed: 0.359 sec
+
+Testcase: testDoGetNotFragment took 0.326 sec
+Testcase: testDoGetisFragment took 0.004 sec
+Testcase: testDoPost took 0.005 sec

@@ -1,0 +1,11 @@
+<classpath>
+  <classpathentry path="org.eclipse.jdt.launching.JRE_CONTAINER" kind="con"/>
+  <classpathentry path="src/main/java" excluding="**/.svn/|**/CVS/" kind="src"/>
+  <classpathentry path="target/classes" kind="output"/>
+  <classpathentry path="M2_REPO/jmock/jmock/1.2.0/jmock-1.2.0.jar" kind="var"/>
+  <classpathentry path="M2_REPO/junit/junit/4.3.1/junit-4.3.1.jar" kind="var"/>
+  <classpathentry path="M2_REPO/org/slf4j/jcl104-over-slf4j/1.4.3/jcl104-over-slf4j-1.4.3.jar" kind="var"/>
+  <classpathentry path="M2_REPO/org/slf4j/slf4j-api/1.4.3/slf4j-api-1.4.3.jar" kind="var"/>
+  <classpathentry path="M2_REPO/org/slf4j/slf4j-log4j12/1.4.3/slf4j-log4j12-1.4.3.jar" kind="var"/>
+  <classpathentry path="/registry" combineaccessrules="false" kind="src"/>
+</classpath>

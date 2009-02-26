@@ -1,0 +1,7 @@
+Testsuite: org.intalio.tempo.security.ldap.L_D_A_P_RBACProviderMockTest
+Tests run: 4, Failures: 0, Errors: 0, Time elapsed: 0.084 sec
+
+Testcase: testGetter took 0.003 sec
+Testcase: testDispose took 0.001 sec
+Testcase: testInitialize took 0.002 sec
+Testcase: testQuery took 0.048 sec

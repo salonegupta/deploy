@@ -1,0 +1,9 @@
+<classpath>
+  <classpathentry path="org.eclipse.jdt.launching.JRE_CONTAINER" kind="con"/>
+  <classpathentry path="target/generated/xmlbeans" excluding="**/.svn/|**/CVS/" kind="src"/>
+  <classpathentry path="target/classes" kind="output"/>
+  <classpathentry path="M2_REPO/jmock/jmock/1.2.0/jmock-1.2.0.jar" kind="var"/>
+  <classpathentry path="M2_REPO/junit/junit/4.3.1/junit-4.3.1.jar" kind="var"/>
+  <classpathentry path="M2_REPO/org/apache/xmlbeans/xmlbeans/2.3.0/xmlbeans-2.3.0.jar" kind="var"/>
+  <classpathentry path="M2_REPO/stax/stax-api/1.0/stax-api-1.0.jar" kind="var"/>
+</classpath>

@@ -1,0 +1,5 @@
+Testsuite: org.intalio.tempo.web.SysPropApplicationContextLoaderTest
+Tests run: 2, Failures: 0, Errors: 0, Time elapsed: 0.037 sec
+
+Testcase: testContextLoader took 0.016 sec
+Testcase: testGetBean took 0.015 sec

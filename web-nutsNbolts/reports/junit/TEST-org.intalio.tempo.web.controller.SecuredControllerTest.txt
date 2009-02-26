@@ -1,0 +1,10 @@
+Testsuite: org.intalio.tempo.web.controller.SecuredControllerTest
+Tests run: 7, Failures: 0, Errors: 0, Time elapsed: 0.741 sec
+
+Testcase: testShowFormWithoutUser took 0.11 sec
+Testcase: testGetCurrentUser took 0.102 sec
+Testcase: testShowFormWithUser took 0.113 sec
+Testcase: testProcessFormSubmissionWithoutUser took 0.096 sec
+Testcase: testProcessFormSubmissionWithUser took 0.1 sec
+Testcase: testProcessFormSubmissionInvalidActionWithUser took 0.101 sec
+Testcase: testProcessFormSubmissionValidActionWithUser took 0.097 sec

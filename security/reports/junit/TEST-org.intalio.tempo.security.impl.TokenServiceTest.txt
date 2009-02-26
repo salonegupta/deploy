@@ -1,0 +1,11 @@
+Testsuite: org.intalio.tempo.security.impl.TokenServiceTest
+Tests run: 4, Failures: 0, Errors: 0, Time elapsed: 1.044 sec
+------------- Standard Output ---------------
+248
+H4sIAAAAAAAAAFWOywqDMBREf6Wruym0SayxLi60oCtRoUgf0E3QtAQTY4xa8Otrl53lnIEzVZmlBcDk5YDYD3a0T9G0AMr7STaIlAUh5zEjUUwowGvSuhBGIp61UN0mSS-prSyyEkAaoTSi_PWnRg5yV1sD0NmuXucxYSGlQUhZFPNDxCk5AozKSD8K0-97GECj3itBVM7Ny32bJ4Fe8sc1nZ1rff-ZM_ER1lS-_1_kXIYmxAAAAA==
+------------- ---------------- ---------------
+
+Testcase: testTokenServiceWithManyRoles took 0.583 sec
+Testcase: testCreateToken took 0.027 sec
+Testcase: testGetTokenFromTicket took 0.16 sec
+Testcase: testTokenService took 0.244 sec

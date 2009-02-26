@@ -1,0 +1,16 @@
+Testsuite: org.intalio.tempo.security.ldap.LDAPQueryEngineTest
+Tests run: 13, Failures: 0, Errors: 0, Time elapsed: 0.093 sec
+
+Testcase: testQueryExist took 0.025 sec
+Testcase: testQueryExistRelation took 0.002 sec
+Testcase: testQueryExtent took 0.002 sec
+Testcase: testQueryFields took 0.001 sec
+Testcase: testQueryFields2 took 0.002 sec
+Testcase: testQueryFilteredFields took 0.001 sec
+Testcase: testQueryFilteredFields2 took 0.002 sec
+Testcase: testQueryInheritReference took 0.002 sec
+Testcase: testQueryInheritRelation took 0.002 sec
+Testcase: testQueryNoRelation took 0.006 sec
+Testcase: testQueryProperties took 0.002 sec
+Testcase: testQueryRelations took 0.001 sec
+Testcase: testQueryRelations2 took 0.002 sec

@@ -1,0 +1,5 @@
+Testsuite: org.intalio.tempo.web.controller.ActionErrorTest
+Tests run: 2, Failures: 0, Errors: 0, Time elapsed: 0.013 sec
+
+Testcase: testActionErrorSimple took 0.001 sec
+Testcase: testActionError took 0.007 sec

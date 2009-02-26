@@ -1,0 +1,4 @@
+Testsuite: org.intalio.tempo.security.ws.TokenWSGetTokenFromTicketTest
+Tests run: 1, Failures: 0, Errors: 0, Time elapsed: 0.819 sec
+
+Testcase: getTokenFromTicket took 0.565 sec
