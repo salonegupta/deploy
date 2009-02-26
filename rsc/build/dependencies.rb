@@ -294,3 +294,8 @@ CAS_LIBS = [
   "xml-security:xmlsec:jar:1.4.0",
   "taglibs:standard:jar:1.1.2"
 ]
+
+TEMPO_REGISTRY = "org.intalio.tempo:tempo-registry:jar:6.0.0.26"
+TEMPO_SECURITY_CLIENT = group("tempo-security", "tempo-security-ws-client", :under=>"org.intalio.tempo", :version=>"6.0.0.26")
+TEMPO_SECURITY_WS_CLIENT = group("tempo-security", "tempo-security-ws-common", "tempo-security-ws-client", :under=>"org.intalio.tempo", :version=>"6.0.0.26")
+TEMPO_WEB_NUTSNBOLTS = "org.intalio.tempo:tempo-web-nutsNbolts:jar:6.0.0.26"
