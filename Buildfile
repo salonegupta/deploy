@@ -70,22 +70,4 @@ define "deploy" do
   define "deploy-ws-service" do
     package(:aar).with :libs => [ projects("deploy-api", "deploy-impl", "deploy-ws-common"), TEMPO_REGISTRY, SLF4J, SPRING[:core] ]
   end
-
-  desc "Task Attachment Service"
-  define "tas-service" do
-    compile.with TEMPO_SECURITY_CLIENT, APACHE_COMMONS[:httpclient], AXIOM, AXIS2, JAXEN, SLF4J, STAX_API, WEBDAV
-
-    test.with TEMPO_SECURITY_WS_CLIENT, APACHE_COMMONS[:codec], LOG4J, SUNMAIL, WSDL4J, WS_COMMONS_SCHEMA, WOODSTOX, INSTINCT
-    test.exclude '*TestUtils*'
-
-    # require live Axis2 instance
-    unless ENV["LIVE"] == 'yes'
-      test.exclude '*Axis2TASService*'
-      test.exclude '*WDSStorageTest*'
-      test.exclude '*SlingStorage*'
-    end
-
-    package :jar
-    package(:aar).with(:libs => [TEMPO_SECURITY_WS_CLIENT, TEMPO_WEB_NUTSNBOLTS, APACHE_COMMONS[:httpclient], APACHE_COMMONS[:codec], JAXEN, SLF4J, SPRING[:core], WEBDAV])
-  end
 end
