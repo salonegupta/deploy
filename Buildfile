@@ -17,7 +17,7 @@ require "rsc/buildr-tasks/generate_sql"
 desc "Deployment Service"
 define "deploy" do
   project.version = VERSION_NUMBER
-  project.group = "org.intalio.deployment"
+  project.group = "org.intalio.deploy"
   
   compile.options.target = "1.5"
 
