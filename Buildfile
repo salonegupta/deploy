@@ -21,9 +21,14 @@ define "deploy" do
   
   compile.options.target = "1.5"
 
+  define "registry" do
+    compile.with SLF4J
+        package :jar
+  end
+
   desc "Deployment API"
   define "deploy-api" do
-    compile.with TEMPO_REGISTRY, SLF4J
+    compile.with project("registry"), SLF4J
     package :jar
   end
 
@@ -37,7 +42,7 @@ define "deploy" do
 
   desc "Deployment Web-Service Common Library"
   define "deploy-ws-common" do
-    compile.with projects("deploy-api", "deploy-impl"), TEMPO_REGISTRY, AXIOM, AXIS2, SUNMAIL, SLF4J, SPRING[:core], STAX_API 
+    compile.with projects("deploy-api", "deploy-impl", "registry"), AXIOM, AXIS2, SUNMAIL, SLF4J, SPRING[:core], STAX_API 
     package :jar
   end
   
@@ -68,6 +73,6 @@ define "deploy" do
 
   desc "Deployment Web-Service"
   define "deploy-ws-service" do
-    package(:aar).with :libs => [ projects("deploy-api", "deploy-impl", "deploy-ws-common"), TEMPO_REGISTRY, SLF4J, SPRING[:core] ]
+    package(:aar).with :libs => [ projects("deploy-api", "deploy-impl", "deploy-ws-common", "registry"), SLF4J, SPRING[:core] ]
   end
 end

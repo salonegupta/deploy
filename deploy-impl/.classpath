@@ -3,7 +3,7 @@
   <classpathentry path="src/main/resources" output="target/resources" excluding="**/.svn/|**/CVS/" kind="src"/>
   <classpathentry path="src/test/java" output="target/test/classes" excluding="**/.svn/|**/CVS/" kind="src"/>
   <classpathentry path="src/test/resources" output="target/test/resources" excluding="**/.svn/|**/CVS/" kind="src"/>
-  <classpathentry path="/deploy-deploy-api" combineaccessrules="false" kind="src"/>
+  <classpathentry path="/deploy-api" combineaccessrules="false" kind="src"/>
   <classpathentry path="target/classes" kind="output"/>
   <classpathentry path="M2_REPO/org/apache/axis2/axis2-kernel/1.4/axis2-kernel-1.4.jar" sourcepath="M2_REPO/org/apache/axis2/axis2-kernel/1.4/axis2-kernel-1.4-sources.jar" kind="var"/>
   <classpathentry path="M2_REPO/org/apache/axis2/axis2-adb/1.4/axis2-adb-1.4.jar" sourcepath="M2_REPO/org/apache/axis2/axis2-adb/1.4/axis2-adb-1.4-sources.jar" kind="var"/>

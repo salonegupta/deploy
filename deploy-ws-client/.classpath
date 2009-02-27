@@ -2,9 +2,9 @@
   <classpathentry path="src/main/java" excluding="**/.svn/|**/CVS/" kind="src"/>
   <classpathentry path="src/test/java" output="target/test/classes" excluding="**/.svn/|**/CVS/" kind="src"/>
   <classpathentry path="src/test/resources" output="target/test/resources" excluding="**/.svn/|**/CVS/" kind="src"/>
-  <classpathentry path="/deploy-deploy-api" combineaccessrules="false" kind="src"/>
-  <classpathentry path="/deploy-deploy-impl" combineaccessrules="false" kind="src"/>
-  <classpathentry path="/deploy-deploy-ws-common" combineaccessrules="false" kind="src"/>
+  <classpathentry path="/deploy-api" combineaccessrules="false" kind="src"/>
+  <classpathentry path="/deploy-impl" combineaccessrules="false" kind="src"/>
+  <classpathentry path="/deploy-ws-common" combineaccessrules="false" kind="src"/>
   <classpathentry path="target/classes" kind="output"/>
   <classpathentry path="/git/deploy/deploy-impl/target/test/classes" kind="lib"/>
   <classpathentry path="M2_REPO/commons-httpclient/commons-httpclient/3.1/commons-httpclient-3.1.jar" sourcepath="M2_REPO/commons-httpclient/commons-httpclient/3.1/commons-httpclient-3.1-sources.jar" kind="var"/>
