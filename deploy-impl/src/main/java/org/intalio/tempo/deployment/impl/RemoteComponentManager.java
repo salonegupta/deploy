@@ -11,7 +11,6 @@ package org.intalio.tempo.deployment.impl;
 
 import static org.intalio.tempo.deployment.impl.LocalizedMessages._;
 
-import java.io.File;
 import java.util.List;
 
 import javax.naming.Context;
@@ -69,7 +68,7 @@ public class RemoteComponentManager implements ComponentManager {
         getComponentManager().undeploy(name, deployedObjects);
     }
 
-    public void initialize(ComponentId name, File path) {
+    public void initialize(ComponentId name, String path) {
         getComponentManager().initialize(name, path);
     }
 
@@ -85,7 +84,7 @@ public class RemoteComponentManager implements ComponentManager {
         getComponentManager().stop(name);
     }
 
-    public void deployed(ComponentId name, File path, boolean activate) {
+    public void deployed(ComponentId name, String path, boolean activate) {
         getComponentManager().deployed(name, path, activate);
     }
 
@@ -101,7 +100,7 @@ public class RemoteComponentManager implements ComponentManager {
 		getComponentManager().activated(name);
 	}
 
-	public ComponentManagerResult deploy(ComponentId name, File path, boolean activate) {
+	public ComponentManagerResult deploy(ComponentId name, String path, boolean activate) {
 		return getComponentManager().deploy(name, path, activate);
 	}
 

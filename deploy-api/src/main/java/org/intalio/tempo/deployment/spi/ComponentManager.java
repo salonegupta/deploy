@@ -12,7 +12,6 @@
 
 package org.intalio.tempo.deployment.spi;
 
-import java.io.File;
 import java.rmi.Remote;
 import java.util.List;
 
@@ -64,7 +63,7 @@ public interface ComponentManager extends Remote {
      * @param activate
      * @return
      */
-    ComponentManagerResult deploy(ComponentId name, File path, boolean activate);
+    ComponentManagerResult deploy(ComponentId name, String path, boolean activate);
 
     /**
      * Initializes a component. Combined with the start(), initialize() works in a 2-phase pattern. On a initialize() call,
@@ -80,7 +79,7 @@ public interface ComponentManager extends Remote {
      * @param name Component identifier
      * @param path Component root directory
      */
-    void initialize(ComponentId name, File path);
+    void initialize(ComponentId name, String path);
 
     /**
      * Starts a component.
@@ -146,7 +145,7 @@ public interface ComponentManager extends Remote {
      * @param path Component root directory
      * @param activate when set to true, the version is also activated
      */
-    void deployed(ComponentId name, File path, boolean activate);
+    void deployed(ComponentId name, String path, boolean activate);
 
     /**
      * Notification of undeployed component.

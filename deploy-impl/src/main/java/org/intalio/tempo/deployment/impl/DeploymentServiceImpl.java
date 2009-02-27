@@ -416,7 +416,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
                         ComponentManager manager = getComponentManager(componentManager);
                         try {
-                            result.addAll(component, componentManager, manager.deploy(component, f, activate).getMessages());
+                            result.addAll(component, componentManager, manager.deploy(component, f.getAbsolutePath(), activate).getMessages());
                             deployed.add(new DeployedComponent(component, f.getAbsolutePath(), componentManager));
                         } catch (Exception except) {
                             String msg = _("Exception while deploying component {0}: {1}", componentName, except.getLocalizedMessage());
@@ -667,7 +667,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             try {
                 LOG.debug(_("Deployed component {0}", dc));
                 ComponentManager manager = getComponentManager(dc.getComponentManagerName());
-                manager.deployed(dc.getComponentId(), new File(dc.getComponentDir()), activate);
+                manager.deployed(dc.getComponentId(), new File(dc.getComponentDir()).getAbsolutePath(), activate);
             } catch (Exception except) {
                 String msg = _("Error during deployment notification of component {0}: {1}", dc.getComponentId(), except);
                 LOG.error(msg, except);
@@ -737,7 +737,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 try {
                     LOG.debug(_("Initialize component {0}", dc));
                     ComponentManager manager = getComponentManager(dc.getComponentManagerName());
-                    manager.initialize(dc.getComponentId(), new File(dc.getComponentDir()));
+                    manager.initialize(dc.getComponentId(), new File(dc.getComponentDir()).getAbsolutePath());
                     initialized.add(dc);
                 } catch (Exception except) {
                     success = false;
@@ -889,7 +889,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             for( DeployedAssembly assembly : assemblies ) {
             	for( DeployedComponent component : assembly.getDeployedComponents() ) {
             		ComponentManager manager = _componentManagers.get(component.getComponentManagerName());
-            		manager.deployed(component.getComponentId(), new File(component.getComponentDir()), false);
+            		manager.deployed(component.getComponentId(), new File(component.getComponentDir()).getAbsolutePath(), false);
             	}
             }
             
@@ -1171,7 +1171,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                                 if (name.equals(component.getComponentManagerName()) || name.equals(type)) {
                                     try {
                                         LOG.debug(_("Initialize component {0}", component));
-                                        manager.initialize(component.getComponentId(), new File(component.getComponentDir()));
+                                        manager.initialize(component.getComponentId(), new File(component.getComponentDir()).getAbsolutePath());
                                     } catch (Exception except) {
                                         LOG.error(_("Error while activating component {0}", component), except);
                                     }
@@ -1262,7 +1262,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             return msgs;
         }
 
-        public void initialize(ComponentId name, File path) {
+        public void initialize(ComponentId name, String path) {
             LOG.warn(_("Missing component manager: activate {0} {1}", name, path));
         }
 
@@ -1270,7 +1270,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             LOG.warn(_("Missing component manager: deactivate {0}", cid));
         }
 
-        public void deployed(ComponentId cid, File path, boolean activate) {
+        public void deployed(ComponentId cid, String path, boolean activate) {
             LOG.warn(_("Missing component manager: deployed {0}", cid));
         }
 
@@ -1298,7 +1298,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             LOG.warn(_("Missing component manager: undeploy {0}", cid));
 		}
 
-		public ComponentManagerResult deploy(ComponentId name, File path,
+		public ComponentManagerResult deploy(ComponentId name, String path,
 				boolean activate) {
             String msg = _("No component manager for component type {0}", _componentType);
             return new ComponentManagerResult(message(error(msg)));

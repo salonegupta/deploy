@@ -52,13 +52,13 @@ public class MockComponentManager implements ComponentManager {
         return _name;
     }
 
-    public ComponentManagerResult deploy(ComponentId name, File path, boolean activate) {
+    public ComponentManagerResult deploy(ComponentId name, String path, boolean activate) {
         List<DeploymentMessage> messages = new ArrayList<DeploymentMessage>();
         if (_failDeployment) throw new RuntimeException("Deployment force-failed");
         return new ComponentManagerResult(messages);  
     }
 
-    public void initialize(ComponentId name, File path) {
+    public void initialize(ComponentId name, String path) {
         if (_failActivate) throw new RuntimeException("Activate force failed");
 
         Component c = _components.get(name);
@@ -98,8 +98,8 @@ public class MockComponentManager implements ComponentManager {
         return _components.containsKey(name);
     }
     
-    public void deployed(ComponentId name, File path, boolean activate) {
-        _components.put(name, new Component(name, path));
+    public void deployed(ComponentId name, String path, boolean activate) {
+        _components.put(name, new Component(name, new File(path)));
     }
 
     public void undeployed(ComponentId name) {
