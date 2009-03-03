@@ -10,6 +10,6 @@
     <operation name="getDeployedAssemblies">
         <messageReceiver class="org.apache.axis2.receivers.RawXMLINOutMessageReceiver"/>
     </operation>
-    <parameter name="ServiceClass">org.intalio.tempo.deployment.ws.DeployWS</parameter>
+    <parameter name="ServiceClass">org.intalio.deploy.deployment.ws.DeployWS</parameter>
 </service>
 
