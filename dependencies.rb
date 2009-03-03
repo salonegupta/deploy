@@ -72,6 +72,6 @@ AXIS2 = [
   SUNMAIL
 ]
   
-SECURITY_CLIENT = group("securities-security", "securities-security-ws-client", :under=>"org.intalio.security", :version=>"6.0.0.34-SNAPSHOT")
-SECURITY_WS_CLIENT = group("securities-security", "securities-security-ws-common", "securities-security-ws-client", :under=>"org.intalio.security", :version=>"6.0.0.34-SNAPSHOT")
-WEB_NUTSNBOLTS = "org.intalio.security:securities-web-nutsNbolts:jar:6.0.0.34-SNAPSHOT"
+SECURITY_CLIENT = group("securities-security", "securities-security-ws-client", :under=>"org.intalio.security", :version=>"1.0.0.0-SNAPSHOT")
+SECURITY_WS_CLIENT = group("securities-security", "securities-security-ws-common", "securities-security-ws-client", :under=>"org.intalio.security", :version=>"1.0.0.0-SNAPSHOT")
+WEB_NUTSNBOLTS = "org.intalio.security:securities-web-nutsNbolts:jar:1.0.0.0-SNAPSHOT"
