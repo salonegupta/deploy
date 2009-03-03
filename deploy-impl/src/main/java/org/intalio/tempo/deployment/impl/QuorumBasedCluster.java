@@ -119,9 +119,9 @@ public class QuorumBasedCluster implements CallBack, Cluster {
         gms.shutdown(GMSConstants.shutdownType.INSTANCE_SHUTDOWN);
     }
     
-    public void sayHello() {
+    public void warmUp() {
     	try {
-    		gms.getGroupHandle().sendMessage("Component", ("Hello from " + serverId).getBytes());
+    		gms.getGroupHandle().sendMessage("Component", ("WARM_UP from " + serverId).getBytes());
     	} catch( Exception e ) {
     		throw new RuntimeException(e);
     	}

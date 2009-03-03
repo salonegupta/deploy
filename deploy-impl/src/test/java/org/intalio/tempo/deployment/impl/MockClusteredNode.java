@@ -123,7 +123,7 @@ public class MockClusteredNode implements ClusteredNode, ApplicationContextAware
 	}
 	
 	public void sayHello() throws Exception {
-		service.sayHello();
+		service.warmUpCluster();
 	}
 
 	public void failDeployment() {

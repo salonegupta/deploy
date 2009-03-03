@@ -37,7 +37,7 @@ public class SingleNodeCluster implements Cluster {
 		return true;
 	}
 	
-	public void sayHello() {
+	public void warmUp() {
 		// do nothing
 	}
 	

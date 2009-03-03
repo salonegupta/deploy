@@ -124,6 +124,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
     private Persistence _persist;
 
+    // the Null-Object pattern
     private Cluster cluster = new SingleNodeCluster();
     
     //
@@ -872,8 +873,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             LOG.info(_("Waiting for component managers: {0}", missing));
     }
 
-    public void sayHello() throws Exception {
-    	cluster.sayHello();
+    public void warmUpCluster() throws Exception {
+    	cluster.warmUp();
     }
     
     private void internalStart() {

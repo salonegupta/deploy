@@ -44,7 +44,7 @@ public interface Cluster {
 	 */
 	boolean isCoordinator();
 	
-	void sayHello();
+	void warmUp();
 
 	/**
 	 * Returns all the current members in the cluster.
