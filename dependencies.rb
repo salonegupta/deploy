@@ -72,7 +72,6 @@ AXIS2 = [
   SUNMAIL
 ]
   
-TEMPO_REGISTRY = "org.intalio.tempo:tempo-registry:jar:6.0.0.26"
-TEMPO_SECURITY_CLIENT = group("tempo-security", "tempo-security-ws-client", :under=>"org.intalio.tempo", :version=>"6.0.0.26")
-TEMPO_SECURITY_WS_CLIENT = group("tempo-security", "tempo-security-ws-common", "tempo-security-ws-client", :under=>"org.intalio.tempo", :version=>"6.0.0.26")
-TEMPO_WEB_NUTSNBOLTS = "org.intalio.tempo:tempo-web-nutsNbolts:jar:6.0.0.26"
+SECURITY_CLIENT = group("securities-security", "securities-security-ws-client", :under=>"org.intalio.security", :version=>"6.0.0.34-SNAPSHOT")
+SECURITY_WS_CLIENT = group("securities-security", "securities-security-ws-common", "securities-security-ws-client", :under=>"org.intalio.security", :version=>"6.0.0.34-SNAPSHOT")
+WEB_NUTSNBOLTS = "org.intalio.security:securities-web-nutsNbolts:jar:6.0.0.34-SNAPSHOT"

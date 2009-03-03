@@ -1,9 +1,9 @@
 <classpath>
   <classpathentry path="src/main/java" excluding="**/.svn/|**/CVS/" kind="src"/>
-  <classpathentry path="/deploy-api" combineaccessrules="false" kind="src"/>
-  <classpathentry path="/deploy-impl" combineaccessrules="false" kind="src"/>
+  <classpathentry path="/deploy-deploy-api" combineaccessrules="false" kind="src"/>
+  <classpathentry path="/deploy-deploy-impl" combineaccessrules="false" kind="src"/>
+  <classpathentry path="/deploy-registry" combineaccessrules="false" kind="src"/>
   <classpathentry path="target/classes" kind="output"/>
-  <classpathentry path="M2_REPO/org/intalio/tempo/tempo-registry/6.0.0.26/tempo-registry-6.0.0.26.jar" sourcepath="M2_REPO/org/intalio/tempo/tempo-registry/6.0.0.26/tempo-registry-6.0.0.26-sources.jar" kind="var"/>
   <classpathentry path="M2_REPO/org/apache/ws/commons/axiom/axiom-api/1.2.7/axiom-api-1.2.7.jar" sourcepath="M2_REPO/org/apache/ws/commons/axiom/axiom-api/1.2.7/axiom-api-1.2.7-sources.jar" kind="var"/>
   <classpathentry path="M2_REPO/org/apache/ws/commons/axiom/axiom-dom/1.2.7/axiom-dom-1.2.7.jar" sourcepath="M2_REPO/org/apache/ws/commons/axiom/axiom-dom/1.2.7/axiom-dom-1.2.7-sources.jar" kind="var"/>
   <classpathentry path="M2_REPO/org/apache/ws/commons/axiom/axiom-impl/1.2.7/axiom-impl-1.2.7.jar" sourcepath="M2_REPO/org/apache/ws/commons/axiom/axiom-impl/1.2.7/axiom-impl-1.2.7-sources.jar" kind="var"/>
