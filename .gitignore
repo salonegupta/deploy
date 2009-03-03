@@ -5,3 +5,5 @@ derby.log
 .project
 .metadata
 .shoal
+deploy-impl/temp-testng-customsuite.xml
+deploy-impl/test-output
