@@ -7,3 +7,7 @@ derby.log
 .shoal
 deploy-impl/temp-testng-customsuite.xml
 deploy-impl/test-output
+junit*.properties
+deploy-impl/cobertura.ser
+deploy-impl/log
+

@@ -5,9 +5,9 @@
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
 		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd">
 		
-	<bean id="cluster" class="org.intalio.tempo.deployment.impl.ClusterProxy">
+	<bean id="cluster" class="org.intalio.deploy.deployment.impl.ClusterProxy">
 		<property name="derbyNetworkServer">
-			<bean class="org.intalio.tempo.deployment.impl.DerbyNetworkServerResource" init-method="start">
+			<bean class="org.intalio.deploy.deployment.impl.DerbyNetworkServerResource" init-method="start">
 				<property name="port" value="1527"/>
 			</bean>
 		</property>
@@ -31,27 +31,27 @@
 	</bean>
 	
 	<util:list id="nodes">
-		<bean class="org.intalio.tempo.deployment.impl.NodeProxy">
+		<bean class="org.intalio.deploy.deployment.impl.NodeProxy">
 			<property name="clusteredNode">
 				<bean class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
 					<property name="serviceUrl" value="rmi://localhost:1199/ClusteredNode" />
-					<property name="serviceInterface" value="org.intalio.tempo.deployment.impl.ClusteredNode" />
+					<property name="serviceInterface" value="org.intalio.deploy.deployment.impl.ClusteredNode" />
 				</bean>
 			</property>
 		</bean>
-		<bean class="org.intalio.tempo.deployment.impl.NodeProxy">
+		<bean class="org.intalio.deploy.deployment.impl.NodeProxy">
 			<property name="clusteredNode">
 				<bean class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
 					<property name="serviceUrl" value="rmi://localhost:1299/ClusteredNode" />
-					<property name="serviceInterface" value="org.intalio.tempo.deployment.impl.ClusteredNode" />
+					<property name="serviceInterface" value="org.intalio.deploy.deployment.impl.ClusteredNode" />
 				</bean>
 			</property>
 		</bean>
-		<bean class="org.intalio.tempo.deployment.impl.NodeProxy">
+		<bean class="org.intalio.deploy.deployment.impl.NodeProxy">
 			<property name="clusteredNode">
 				<bean class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
 					<property name="serviceUrl" value="rmi://localhost:1399/ClusteredNode" />
-					<property name="serviceInterface" value="org.intalio.tempo.deployment.impl.ClusteredNode" />
+					<property name="serviceInterface" value="org.intalio.deploy.deployment.impl.ClusteredNode" />
 				</bean>
 			</property>
 		</bean>
