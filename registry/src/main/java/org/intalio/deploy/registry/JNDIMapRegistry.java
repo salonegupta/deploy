@@ -94,7 +94,7 @@ public class JNDIMapRegistry implements Registry {
     }
     
     public void init(Properties props) {
-        _jndiLookup = props.getProperty("org.intalio.tempo.registry.jndi.lookup", DEFAULT_JNDI_LOOKUP);
+        _jndiLookup = props.getProperty("org.intalio.deploy.registry.jndi.lookup", DEFAULT_JNDI_LOOKUP);
     }
 
     @SuppressWarnings("unchecked")

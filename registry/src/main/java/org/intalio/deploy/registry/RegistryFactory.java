@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 public class RegistryFactory {
     private static final Logger LOG = LoggerFactory.getLogger(RegistryFactory.class);
 
-    public static final String DEFAULT_PROPERTY_FILE = "${org.intalio.tempo.configDirectory}/tempo-registry.properties";
+    public static final String DEFAULT_PROPERTY_FILE = "${org.intalio.deploy.configDirectory}/deploy-registry.properties";
 
     private String _propertyFile = DEFAULT_PROPERTY_FILE;
 
@@ -72,8 +72,8 @@ public class RegistryFactory {
             
             LOG.debug("Initializing RegistryFactory with properties: "+_props);
             
-            String className = (String) _props.getProperty("org.intalio.tempo.registry.class", StaticMapRegistry.class.getName());
-            boolean useContextClassLoader = _props.getProperty("org.intalio.tempo.registry.contextClassLoader", "true").equalsIgnoreCase("true");
+            String className = (String) _props.getProperty("org.intalio.deploy.registry.class", StaticMapRegistry.class.getName());
+            boolean useContextClassLoader = _props.getProperty("org.intalio.deploy.registry.contextClassLoader", "true").equalsIgnoreCase("true");
             Class<Registry> clazz;
             if (useContextClassLoader) {
                 try {

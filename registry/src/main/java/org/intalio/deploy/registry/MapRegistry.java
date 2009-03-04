@@ -115,7 +115,7 @@ public class MapRegistry implements Registry, Remote {
     }
 
     public void init(Properties props) {
-        _debug = props.getProperty("org.intalio.tempo.registry.debug", "false").equalsIgnoreCase("true");
+        _debug = props.getProperty("org.intalio.deploy.registry.debug", "false").equalsIgnoreCase("true");
     }
 
 }
