@@ -20,7 +20,7 @@ import javax.naming.InitialContext;
  */
 public class JNDIMapRegistry implements Registry {
 
-    public static final String DEFAULT_JNDI_LOOKUP  = "java:comp/env/registry/TempoRegistry";
+    public static final String DEFAULT_JNDI_LOOKUP  = "java:comp/env/registry/DeployRegistry";
 
     private String _jndiLookup = DEFAULT_JNDI_LOOKUP;
     
