@@ -98,8 +98,8 @@ public class MockComponentManager implements ComponentManager {
         return _components.containsKey(name);
     }
     
-    public void deployed(ComponentId name, File path, boolean activate) {
-        _components.put(name, new Component(name, path));
+    public void deployed(ComponentId name, String path, boolean activate) {
+        _components.put(name, new Component(name, new File(path)));
     }
 
     public void undeployed(ComponentId name) {

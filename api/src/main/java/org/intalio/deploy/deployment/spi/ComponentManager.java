@@ -146,7 +146,7 @@ public interface ComponentManager extends Remote {
      * @param path Component root directory
      * @param activate when set to true, the version is also activated
      */
-    void deployed(ComponentId name, File path, boolean activate);
+    void deployed(ComponentId name, String path, boolean activate);
 
     /**
      * Notification of undeployed component.

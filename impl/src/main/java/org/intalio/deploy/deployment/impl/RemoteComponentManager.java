@@ -85,7 +85,7 @@ public class RemoteComponentManager implements ComponentManager {
         getComponentManager().stop(name);
     }
 
-    public void deployed(ComponentId name, File path, boolean activate) {
+    public void deployed(ComponentId name, String path, boolean activate) {
         getComponentManager().deployed(name, path, activate);
     }
 
