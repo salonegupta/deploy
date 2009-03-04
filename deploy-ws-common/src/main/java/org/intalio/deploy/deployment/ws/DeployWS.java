@@ -78,7 +78,7 @@ public class DeployWS {
                 ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
                 Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
                 try {
-                    FileSystemResource config = new FileSystemResource(new File(_configDir, "tempo-deploy.xml"));
+                    FileSystemResource config = new FileSystemResource(new File(_configDir, "deploy-service.xml"));
                     XmlBeanFactory factory = new XmlBeanFactory(config);
         
                     PropertyPlaceholderConfigurer propsCfg = new PropertyPlaceholderConfigurer();
