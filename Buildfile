@@ -67,6 +67,6 @@ define "deploy" do
 
   desc "Deployment Web-Service"
   define "deploy-ws-service" do
-    package(:aar).with :libs => [ projects("deploy-api", "deploy-impl", "deploy-ws-common", "registry"), SLF4J, SPRING[:core] ]
+    package(:aar).with :libs => [ projects("deploy-api", "deploy-impl", "deploy-ws-common", "registry"), SLF4J, SPRING[:core], APACHE_COMMONS ]
   end
 end
