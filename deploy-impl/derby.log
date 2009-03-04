@@ -1,7 +1,0 @@
-Apache Derby Network Server - 10.2.2.0 - (485682) started and ready to accept connections on port 1527 at 2009-03-03 19:46:33.444 GMT 
-----------------------------------------------------------------
-2009-03-03 19:46:40.140 GMT:
- Booting Derby version The Apache Software Foundation - Apache Derby - 10.2.2.0 - (485682): instance c013800d-011f-cddf-8b52-0000030b22e0
-on database directory /git/deploy/deploy-impl/target/JPADB  
-
-Database Class Loader started - derby.database.classpath=''

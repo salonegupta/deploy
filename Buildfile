@@ -3,7 +3,7 @@ require "buildr/xmlbeans"
 require "buildr/cobertura"
 
 # Keep this structure to allow the build system to update version numbers.
-VERSION_NUMBER = "1.0.0.5-SNAPSHOT"
+VERSION_NUMBER = "1.0.0-SNAPSHOT"
 
 require "dependencies.rb"
 require "repositories.rb"
@@ -21,30 +21,30 @@ define "deploy" do
   end
 
   desc "Deployment API"
-  define "deploy-api" do
+  define "api" do
     compile.with project("registry"), SLF4J
     package :jar
   end
 
   desc "Deployment Service Implementation"
-  define "deploy-impl" do
-    compile.with projects("deploy-api"), WEB_NUTSNBOLTS, SERVLET_API, SHOAL, SLF4J, SPRING[:core]
+  define "impl" do
+    compile.with projects("api"), WEB_NUTSNBOLTS, SERVLET_API, SHOAL, SLF4J, SPRING[:core]
     test.with AXIS2, APACHE_COMMONS[:dbcp], APACHE_COMMONS[:pool], LOG4J, XERCES, APACHE_DERBY, APACHE_DERBY_NET, APACHE_DERBY_CLIENT
     test.exclude '*TestUtils*'
     package :jar
   end
 
   desc "Deployment Web-Service Common Library"
-  define "deploy-ws-common" do
-    compile.with projects("deploy-api", "deploy-impl", "registry"), AXIOM, AXIS2, SUNMAIL, SLF4J, SPRING[:core], STAX_API 
+  define "ws-common" do
+    compile.with projects("api", "impl", "registry"), AXIOM, AXIS2, SUNMAIL, SLF4J, SPRING[:core], STAX_API 
     package :jar
   end
   
   desc "Deployment Web-Service Client"
-  define "deploy-ws-client" do
-    compile.with projects("deploy-api", "deploy-ws-common"), 
+  define "ws-client" do
+    compile.with projects("api", "ws-common"), 
                  AXIOM, AXIS2, SLF4J, STAX_API, SPRING[:core]
-    test.with project("deploy-impl"), project("deploy-impl").test.compile.target, APACHE_COMMONS[:httpclient], APACHE_COMMONS[:codec], LOG4J, SUNMAIL, XERCES, WS_COMMONS_SCHEMA, WSDL4J, WOODSTOX 
+    test.with project("impl"), project("impl").test.compile.target, APACHE_COMMONS[:httpclient], APACHE_COMMONS[:codec], LOG4J, SUNMAIL, XERCES, WS_COMMONS_SCHEMA, WSDL4J, WOODSTOX 
 
     # Remember to set JAVA_OPTIONS before starting Jetty
     # export JAVA_OPTIONS=-Dorg.intalio.tempo.configDirectory=/home/boisvert/svn/tempo/security-ws2/src/test/resources
@@ -61,12 +61,13 @@ define "deploy" do
     end
 
     package(:jar).tap do |jar|
-      jar.with :meta_inf => project("deploy-ws-service").path_to("src/main/axis2/*.wsdl")
+      jar.with :meta_inf => project("ws-service").path_to("src/main/axis2/*.wsdl")
     end
   end
 
   desc "Deployment Web-Service"
-  define "deploy-ws-service" do
-    package(:aar).with :libs => [ projects("deploy-api", "deploy-impl", "deploy-ws-common", "registry"), SLF4J, SPRING[:core], APACHE_COMMONS[:dbcp], APACHE_COMMONS[:pool], APACHE_DERBY, APACHE_DERBY_NET ]
+  define "ws-service" do
+#    compile.with projects("api", "ws-common"), AXIOM, AXIS2, SLF4J, SPRING[:core], STAX_API
+    package(:aar).with :libs => [ projects("api", "impl", "ws-common", "registry"), SLF4J, SPRING[:core], APACHE_COMMONS[:dbcp], APACHE_COMMONS[:pool], APACHE_DERBY, APACHE_DERBY_NET ]
   end
 end

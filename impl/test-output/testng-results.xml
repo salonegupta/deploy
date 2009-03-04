@@ -1,0 +1,10 @@
+<testng-results>
+  <reporter-output>
+  </reporter-output>
+  <suite name="deploy-impl">
+    <groups>
+    </groups>
+    <test name="org.intalio.tempo.deployment.impl.ClusteredDeployServiceDeployTest">
+    </test>
+  </suite>
+</testng-results>
