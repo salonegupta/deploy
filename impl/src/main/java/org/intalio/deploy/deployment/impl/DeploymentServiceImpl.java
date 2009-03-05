@@ -221,8 +221,6 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 				} catch (NamingException e) {
 		            throw new IllegalStateException("Couldn't find datasource through jndi");
 				}
-
-            	throw new IllegalStateException("Datasource not set");
             }
             
             _persist = new Persistence(new File(_deployDir), _dataSource);
