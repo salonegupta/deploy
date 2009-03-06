@@ -1,1 +1,3 @@
 (in /git/deploy, development)
+The following tests failed:
+org.intalio.deploy.deployment.impl.ClusteredDeployServiceDeployTest

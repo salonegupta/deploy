@@ -92,6 +92,7 @@ public class Persistence {
         try {
             c = getConnection();
             // Insert assembly
+            if( LOG.isTraceEnabled() ) LOG.trace("DEPLOY_ASSEMBLY: " + name + "-" + version);
             EasyStatement inserta = new EasyStatement(c, "INSERT INTO DEPLOY_ASSEMBLIES VALUES (?,?,?,?)");
             try {
                 inserta.write(name);
@@ -109,6 +110,7 @@ public class Persistence {
                 String cdir = assemblyDir.toURI().relativize(new File(dc.getComponentDir()).toURI()).getPath();
                 String manager = dc.getComponentManagerName();
 
+                if( LOG.isTraceEnabled() ) LOG.trace("DEPLOY_COMPONENT: " + name + "-" + version + "/" + component);
                 EasyStatement insertc = new EasyStatement(c, "INSERT INTO DEPLOY_COMPONENTS VALUES (?,?,?,?,?)");
                 try {
                     insertc.write(name);
