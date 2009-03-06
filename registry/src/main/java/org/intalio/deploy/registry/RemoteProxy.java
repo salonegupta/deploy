@@ -25,6 +25,9 @@ import java.rmi.Remote;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Proxy for "remote" objects, used to avoid compatibility issues with same interfaces 
  * loaded in different classloaders.
@@ -33,6 +36,8 @@ import java.util.List;
  * to achieve pass-by-value semantic for java.io.Serializable objects
  */
 public class RemoteProxy<T> implements InvocationHandler {
+	private static final Logger LOG = LoggerFactory.getLogger(RemoteProxy.class);
+	
     private final T _remoteObject;
     private final Class<?>[] _localInterfaces;
     private final ClassLoader _localClassLoader;
@@ -77,6 +82,8 @@ public class RemoteProxy<T> implements InvocationHandler {
      */
     @SuppressWarnings("unchecked")
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+    	if(LOG.isTraceEnabled()) traceInvoke("RemoteProxy intercepted invoke to  ", proxy, method, args);
+    	
         Class<Object>[] parameterTypes = (Class<Object>[]) method.getParameterTypes();
         for (int i = 0; args != null && i < args.length; i++) {
             ConvertedObject<Object> converted = export(parameterTypes[i], args[i], _localClassLoader, _remoteClassLoader);
@@ -88,7 +95,9 @@ public class RemoteProxy<T> implements InvocationHandler {
 
         Object result = null;
         try {
-            Thread.currentThread().setContextClassLoader(_remoteClassLoader);
+        	if(LOG.isTraceEnabled()) traceInvoke("RemoteProxy converted invoke to  ", _remoteObject, remoteMethod, args);
+
+        	Thread.currentThread().setContextClassLoader(_remoteClassLoader);
 
             result = remoteMethod.invoke(_remoteObject, args);
         } finally {
@@ -98,6 +107,25 @@ public class RemoteProxy<T> implements InvocationHandler {
         return export((Class<Object>)method.getReturnType(), result, _remoteClassLoader, _localClassLoader).convertedObject;
     }
 
+    private void traceInvoke(String header, Object obj, Method method, Object args[]) {
+    	if( LOG.isTraceEnabled() ) {
+    		StringBuffer buf = new StringBuffer();
+    		for( Object arg : args ) {
+    			if( buf.length() > 0 ) {
+    				buf.append(",");
+    			}
+    			buf.append(arg);
+    			if( arg != null ) {
+        			buf.append(":");
+        			buf.append(arg.getClass());
+        			buf.append(":");
+        			buf.append(arg.getClass().getClassLoader());
+    			}
+    		}
+    		LOG.trace(header + obj + ":" + obj.getClass() + ":" + obj.getClass().getClassLoader() + method.getName() + "(" + buf.toString() + ")");
+    	}
+    }
+    
     /**
      * Convert a type from one class loader to another, using proxying for remote objects or 
      * serialization for value-objects. 

@@ -59,7 +59,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     // Constants
     public static final String DEFAULT_DEPLOY_DIR = "${org.intalio.deploy.configDirectory}/../deploy";
 
-    public static final String DEPLOY_COMPONENT = "TempoDeploymentService";
+    public static final String DEPLOY_COMPONENT = "DeploymentService";
     
     public static final String DATASOURCE_JNDI_PATH = "java:/comp/env/jdbc/BPMSDB";
     //

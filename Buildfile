@@ -28,7 +28,7 @@ define "deploy" do
 
   desc "Deployment Service Implementation"
   define "impl" do
-    compile.with projects("api"), WEB_NUTSNBOLTS, SERVLET_API, SHOAL, SLF4J, SPRING[:core]
+    compile.with projects("api", "registry"), WEB_NUTSNBOLTS, SERVLET_API, SHOAL, SLF4J, SPRING[:core]
     test.with AXIS2, APACHE_COMMONS[:dbcp], APACHE_COMMONS[:pool], LOG4J, XERCES, APACHE_DERBY, APACHE_DERBY_NET, APACHE_DERBY_CLIENT
     test.exclude '*TestUtils*'
     package :jar

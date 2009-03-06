@@ -29,8 +29,6 @@ public class MapRegistry implements Registry, Remote {
     // weak hash map used to avoid memory retention
     private final Map<String, WeakReference<Object>> _map = new HashMap<String, WeakReference<Object>>();
     
-    private boolean _debug = false;
-    
     /**
      * Required no-arg public constructor
      */
@@ -45,8 +43,8 @@ public class MapRegistry implements Registry, Remote {
         synchronized (_map) {
             _map.put(name, new WeakReference<Object>(object));
         }
-        if (_debug) {
-            LOG.debug("bind: {}", name);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("bind: {}", name);
             dump();
         }
     }
@@ -66,7 +64,7 @@ public class MapRegistry implements Registry, Remote {
      */
     @SuppressWarnings("unchecked")
     public <T> T lookup(String name, ClassLoader loader) {
-        if (_debug) {
+        if (LOG.isTraceEnabled()) {
             LOG.debug("lookup: {}", name);
             dump();
         }
@@ -115,7 +113,5 @@ public class MapRegistry implements Registry, Remote {
     }
 
     public void init(Properties props) {
-        _debug = props.getProperty("org.intalio.deploy.registry.debug", "false").equalsIgnoreCase("true");
     }
-
 }

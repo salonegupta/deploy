@@ -29,7 +29,8 @@ public class JBossRegistry implements Registry {
         // nothing
     }
 
-    public <T> void bind(String name, T object) {
+    @SuppressWarnings("unchecked")
+	public <T> void bind(String name, T object) {
         try {
             InitialContext context = new InitialContext();
 
