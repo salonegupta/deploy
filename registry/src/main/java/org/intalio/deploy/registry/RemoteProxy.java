@@ -110,17 +110,19 @@ public class RemoteProxy<T> implements InvocationHandler {
     private void traceInvoke(String header, Object obj, Method method, Object args[]) {
     	if( LOG.isTraceEnabled() ) {
     		StringBuffer buf = new StringBuffer();
-    		for( Object arg : args ) {
-    			if( buf.length() > 0 ) {
-    				buf.append(",");
-    			}
-    			buf.append(arg);
-    			if( arg != null ) {
-        			buf.append(":");
-        			buf.append(arg.getClass());
-        			buf.append(":");
-        			buf.append(arg.getClass().getClassLoader());
-    			}
+    		if( args != null ) {
+	    		for( Object arg : args ) {
+	    			if( buf.length() > 0 ) {
+	    				buf.append(",");
+	    			}
+	    			buf.append(arg);
+	    			if( arg != null ) {
+	        			buf.append(":");
+	        			buf.append(arg.getClass());
+	        			buf.append(":");
+	        			buf.append(arg.getClass().getClassLoader());
+	    			}
+	    		}
     		}
     		LOG.trace(header + obj + ":" + obj.getClass() + ":" + obj.getClass().getClassLoader() + method.getName() + "(" + buf.toString() + ")");
     	}

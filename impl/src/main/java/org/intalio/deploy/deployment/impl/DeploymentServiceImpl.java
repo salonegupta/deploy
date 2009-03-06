@@ -45,6 +45,7 @@ import org.intalio.deploy.deployment.DeploymentMessage.Level;
 import org.intalio.deploy.deployment.spi.ComponentManager;
 import org.intalio.deploy.deployment.spi.ComponentManagerResult;
 import org.intalio.deploy.deployment.spi.DeploymentServiceCallback;    
+import org.intalio.deploy.registry.RemoteProxy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1012,6 +1013,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         }
         if (manager == null)
             manager = new MissingComponentManager(componentType);
+        
         return manager;
     }
 
@@ -1168,7 +1170,9 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
         public void available(ComponentManager manager) {
             String name = manager.getComponentManagerName();
-            _componentManagers.put(name, manager);
+            // proxy the manager for remote class loaders
+            RemoteProxy<ComponentManager> proxy = new RemoteProxy<ComponentManager>(manager, getClass().getClassLoader(), manager.getClass().getClassLoader());
+            _componentManagers.put(name, proxy.newProxyInstance());
             LOG.info(_("ComponentManager now available: {0}", name));
             
             synchronized (LIFECYCLE_LOCK) {
