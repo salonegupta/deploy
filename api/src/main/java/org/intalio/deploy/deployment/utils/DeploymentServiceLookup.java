@@ -25,7 +25,7 @@ import org.intalio.deploy.registry.RegistryFactory;
  * Utility class to lookup DeploymentService.
  */
 public class DeploymentServiceLookup {
-    public static final String DEFAULT_PROPERTY_FILE     = "${org.intalio.deploy.configDirectory}/tempo-deploy.properties";
+    public static final String DEFAULT_PROPERTY_FILE     = "${org.intalio.deploy.configDirectory}/deploy-service.properties";
     public static final String DEFAULT_DEPLOYMENT_SERVICE_NAME  = "DeploymentService";
     public static final String DEFAULT_DEPLOYMENT_CALLBACK_NAME = "DeploymentServiceCallback";
 
@@ -34,6 +34,7 @@ public class DeploymentServiceLookup {
     public String  deploymentCallbackName = DEFAULT_DEPLOYMENT_CALLBACK_NAME;
 
     private Registry _registry;
+    public static boolean isTraceEnabled = false;
     
     /**
      * Default constructor.
@@ -56,6 +57,7 @@ public class DeploymentServiceLookup {
                 props.load(new FileInputStream(configFile));
             deploymentServiceName = (String) props.getProperty("deployment.service.name", DEFAULT_DEPLOYMENT_SERVICE_NAME);
             deploymentCallbackName = (String) props.getProperty("deployment.callback.name", DEFAULT_DEPLOYMENT_CALLBACK_NAME);
+            isTraceEnabled = "true".equalsIgnoreCase(props.getProperty("deployment.trace", "false"));
         } catch (IOException except) {
             throw new RuntimeException(except);
         }

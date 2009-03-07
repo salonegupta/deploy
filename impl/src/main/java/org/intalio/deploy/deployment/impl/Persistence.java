@@ -17,6 +17,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -83,16 +84,16 @@ public class Persistence {
     /**
      * Add a deployed assembly
      */
-    void add(DeployedAssembly assembly) throws PersistenceException {
-        String name = assembly.getAssemblyId().getAssemblyName();
-        int version = assembly.getAssemblyId().getAssemblyVersion();
-        String adir = _deployDir.toURI().relativize((new File(assembly.getAssemblyDir())).toURI()).getPath();
+    void add(DeployedAssembly assemblyStateFromFileSystem, List<DeployedComponent> componentsDeployment) throws PersistenceException {
+        String name = assemblyStateFromFileSystem.getAssemblyId().getAssemblyName();
+        int version = assemblyStateFromFileSystem.getAssemblyId().getAssemblyVersion();
+        String adir = _deployDir.toURI().relativize((new File(assemblyStateFromFileSystem.getAssemblyDir())).toURI()).getPath();
         boolean active = true;
         Connection c = null;
         try {
             c = getConnection();
             // Insert assembly
-            if( LOG.isTraceEnabled() ) LOG.trace("DEPLOY_ASSEMBLY: " + name + "-" + version);
+            if( LOG.isDebugEnabled() ) LOG.debug("DEPLOYMENT.assembly: " + name + "-" + version);
             EasyStatement inserta = new EasyStatement(c, "INSERT INTO DEPLOY_ASSEMBLIES VALUES (?,?,?,?)");
             try {
                 inserta.write(name);
@@ -104,13 +105,13 @@ public class Persistence {
                 inserta.close();
             }
             // Insert components
-            for (DeployedComponent dc: assembly.getDeployedComponents()) {
-                File assemblyDir = new File(assembly.getAssemblyDir());
+            for (DeployedComponent dc: assemblyStateFromFileSystem.getDeployedComponents()) {
+                File assemblyDir = new File(assemblyStateFromFileSystem.getAssemblyDir());
                 String component = dc.getComponentId().getComponentName();
                 String cdir = assemblyDir.toURI().relativize(new File(dc.getComponentDir()).toURI()).getPath();
                 String manager = dc.getComponentManagerName();
 
-                if( LOG.isTraceEnabled() ) LOG.trace("DEPLOY_COMPONENT: " + name + "-" + version + "/" + component);
+                if( LOG.isDebugEnabled() ) LOG.debug("DEPLOYMENT.component: " + name + "-" + version + "/" + component);
                 EasyStatement insertc = new EasyStatement(c, "INSERT INTO DEPLOY_COMPONENTS VALUES (?,?,?,?,?)");
                 try {
                     insertc.write(name);
@@ -123,6 +124,24 @@ public class Persistence {
                     insertc.close();
                 }
             }
+            // Insert resources
+        	for( DeployedComponent component : componentsDeployment ) {
+        		// only if the file system says the component is deployed
+        		if( assemblyStateFromFileSystem.getDeployedComponents().contains(component)) {
+	        		for( String resource : component.getDeployedResources() ) {
+
+	        			if( LOG.isDebugEnabled() ) LOG.debug("DEPLOYMENT.resource: " + name + "-" + version + "/" + component);
+	        			EasyStatement stmt = new EasyStatement(c, "INSERT INTO DEPLOY_RESOURCES(ASSEMBLY, VERSION, COMPONENT, MANAGER, RESOURCE_ID) VALUES(?, ?, ?, ?, ?)");
+		                stmt.write(component.getComponentId().getAssemblyId().getAssemblyName());
+		                stmt.write(component.getComponentId().getAssemblyId().getAssemblyVersion());
+		                stmt.write(component.getComponentId().getComponentName());
+		                stmt.write(component.getComponentManagerName());
+		                stmt.write(resource);
+		                stmt.execute();
+		                stmt.close();
+	        		}
+        		}
+        	}
         } catch (SQLException e) {
             throw new PersistenceException(e);
         } finally {
@@ -155,7 +174,8 @@ public class Persistence {
      * Load persistent deployed state
      */
     Map<AssemblyId, DeployedAssembly> load() {
-        Map<AssemblyId, DeployedAssembly> map = new HashMap<AssemblyId, DeployedAssembly>();
+        Map<AssemblyId, DeployedAssembly> assembliesById = new HashMap<AssemblyId, DeployedAssembly>();
+        Map<TypedComponentId, List<String>> resourceListsByComponentId = new HashMap<TypedComponentId, List<String>>();
         Connection c = null;
         try {
             c = getConnection();
@@ -171,37 +191,65 @@ public class Persistence {
                     AssemblyId aid = new AssemblyId(assembly, version);
                     adir = (new File(_deployDir, adir)).toString();
                     DeployedAssembly da = new DeployedAssembly(aid, adir, new ArrayList<DeployedComponent>(), active);
-                    map.put(aid, da);
+                    assembliesById.put(aid, da);
                 }
             } finally {
                 selecta.close();
             }
 
-            EasyStatement selectb = new EasyStatement(c, "SELECT * FROM DEPLOY_COMPONENTS");
+            EasyStatement selectb = new EasyStatement(c, "SELECT * FROM DEPLOY_RESOURCES");
             try {
                 EasyResultSet rs = selectb.executeQuery();
                 while (rs.next()) {
                     String assembly = rs.readString();
                     int version = rs.readInt();
                     String component = rs.readString();
-                    String manager = rs.readString();
+                    String type = rs.readString();
+                    String resource = rs.readString();
+                    
+                    TypedComponentId tcid = new TypedComponentId(assembly, version, component, type);
+                    List<String> deployedResource = resourceListsByComponentId.get(tcid);
+                    if( deployedResource == null ) {
+                    	deployedResource = new ArrayList<String>();
+                    	resourceListsByComponentId.put(tcid, deployedResource);
+                    }
+                	deployedResource.add(resource);
+                }
+            } finally {
+                selectb.close();
+            }
+
+            EasyStatement selectc = new EasyStatement(c, "SELECT * FROM DEPLOY_COMPONENTS");
+            try {
+                EasyResultSet rs = selectc.executeQuery();
+                while (rs.next()) {
+                    String assembly = rs.readString();
+                    int version = rs.readInt();
+                    String component = rs.readString();
+                    String type = rs.readString();
                     String cdir = rs.readString();
                     AssemblyId aid = new AssemblyId(assembly, version);
                     ComponentId cid = new ComponentId(aid, component);
-                    DeployedAssembly da = map.get(aid);
+                    DeployedAssembly da = assembliesById.get(aid);
                     if (da == null) {
                         LOG.error("Deployed component entry is missing parent assembly: "+cid);
                     } else {
                         cdir = (new File(da.getAssemblyDir(), cdir)).toString();
-                        DeployedComponent dc = new DeployedComponent(cid, cdir, manager);
+                        List<String> deployedResources = resourceListsByComponentId.get(new TypedComponentId(cid, type));
+                        if( deployedResources == null ) {
+                        	deployedResources = new ArrayList<String>();
+                        }
+                        DeployedComponent dc = new DeployedComponent(cid, cdir, type, deployedResources);
                         da.getDeployedComponents().add(dc);
+                        
+                        if( LOG.isDebugEnabled() ) LOG.debug("DEPLOYMENT.component discovered: " + dc + ", resources = " + dc.getDeployedResources());
                     }
-                } 
+                }
                 rs.close();
             } finally {
-                selectb.close();
+                selectc.close();
             }
-            return map;
+            return assembliesById;
         } catch (SQLException e) {
             throw new PersistenceException(e);
         } finally {
@@ -223,7 +271,7 @@ public class Persistence {
             stmt.write(aid.getAssemblyVersion());
             stmt.execute();
             stmt.close();
-            
+
             stmt = new EasyStatement(c, "DELETE FROM DEPLOY_COMPONENTS WHERE ASSEMBLY = ? AND VERSION = ?");
             stmt.write(aid.getAssemblyName());
             stmt.write(aid.getAssemblyVersion());
@@ -292,4 +340,45 @@ public class Persistence {
         }
     }
     
+    
+    static class TypedComponentId extends ComponentId {
+		private static final long serialVersionUID = 1L;
+		
+		private String _componentType;
+
+    	public TypedComponentId(String assemblyName, int assemblyVersion, String componentName, String componentType) {
+    		super(new AssemblyId(assemblyName, assemblyVersion), componentName);
+            if (componentType == null) throw new IllegalArgumentException("Component type name cannot be null");
+            
+            _componentType = componentType;
+        }
+
+    	public TypedComponentId(ComponentId componentId, String componentType) {
+    		super(componentId.getAssemblyId(), componentId.getComponentName());
+            if (componentType == null) throw new IllegalArgumentException("Component type name cannot be null");
+            
+            _componentType = componentType;
+        }
+
+        public String getComponentType() {
+			return _componentType;
+		}
+
+		public boolean equals(Object obj) {
+            if (obj instanceof TypedComponentId) {
+            	TypedComponentId other = (TypedComponentId) obj;
+            	return super.equals(obj) && _componentType.equals(other._componentType);
+            } else {
+                return false;
+            }
+        }
+
+        public int hashCode() {
+            return super.hashCode() + _componentType.hashCode() * 13;
+        }
+        
+        public String toString() {
+            return super.toString() + "." + _componentType;
+        }
+    }
 }

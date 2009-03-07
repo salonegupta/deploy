@@ -13,6 +13,8 @@
 package org.intalio.deploy.deployment;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Deployed component.
@@ -22,14 +24,22 @@ import java.io.Serializable;
 public class DeployedComponent implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    final static List<String> EMPTY_RESOURCE_LIST = new ArrayList<String>(0); 
+
     final ComponentId _componentId;
     final String _componentDir;
     final String _componentManagerName;
+    final List<String> _deployedResources;
 
     public DeployedComponent(ComponentId ComponentId, String componentDir, String componentManagerName) {
+    	this(ComponentId, componentDir, componentManagerName, EMPTY_RESOURCE_LIST);
+    }
+
+    public DeployedComponent(ComponentId ComponentId, String componentDir, String componentManagerName, List<String> deployedResources) {
         _componentId = ComponentId;
         _componentDir = componentDir;
         _componentManagerName = componentManagerName;
+        _deployedResources = deployedResources;
     }
     
     public ComponentId getComponentId() {
@@ -44,8 +54,24 @@ public class DeployedComponent implements Serializable {
         return _componentManagerName;
     }
     
+    public List<String> getDeployedResources() {
+    	return _deployedResources;
+    }
+    
     public String toString() {
-        return _componentId.toString();
+        return _componentId.toString() + "." + _componentManagerName;
     }
 
+	public boolean equals(Object obj) {
+        if (obj instanceof DeployedComponent) {
+        	DeployedComponent other = (DeployedComponent) obj;
+        	return _componentId.equals(other._componentId) && _componentManagerName.equals(other._componentManagerName);
+        } else {
+            return false;
+        }
+    }
+
+    public int hashCode() {
+        return super.hashCode() + _componentManagerName.hashCode() * 13;
+    }
 }

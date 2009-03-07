@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
  * to achieve pass-by-value semantic for java.io.Serializable objects
  */
 public class RemoteProxy<T> implements InvocationHandler {
+	@SuppressWarnings("unused")
 	private static final Logger LOG = LoggerFactory.getLogger(RemoteProxy.class);
 	
     private final T _remoteObject;
@@ -82,8 +83,6 @@ public class RemoteProxy<T> implements InvocationHandler {
      */
     @SuppressWarnings("unchecked")
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-    	if(LOG.isTraceEnabled()) traceInvoke("RemoteProxy intercepted invoke to  ", proxy, method, args);
-    	
         Class<Object>[] parameterTypes = (Class<Object>[]) method.getParameterTypes();
         for (int i = 0; args != null && i < args.length; i++) {
             ConvertedObject<Object> converted = export(parameterTypes[i], args[i], _localClassLoader, _remoteClassLoader);
@@ -95,8 +94,6 @@ public class RemoteProxy<T> implements InvocationHandler {
 
         Object result = null;
         try {
-        	if(LOG.isTraceEnabled()) traceInvoke("RemoteProxy converted invoke to  ", _remoteObject, remoteMethod, args);
-
         	Thread.currentThread().setContextClassLoader(_remoteClassLoader);
 
             result = remoteMethod.invoke(_remoteObject, args);
@@ -105,27 +102,6 @@ public class RemoteProxy<T> implements InvocationHandler {
         }
 
         return export((Class<Object>)method.getReturnType(), result, _remoteClassLoader, _localClassLoader).convertedObject;
-    }
-
-    private void traceInvoke(String header, Object obj, Method method, Object args[]) {
-    	if( LOG.isTraceEnabled() ) {
-    		StringBuffer buf = new StringBuffer();
-    		if( args != null ) {
-	    		for( Object arg : args ) {
-	    			if( buf.length() > 0 ) {
-	    				buf.append(",");
-	    			}
-	    			buf.append(arg);
-	    			if( arg != null ) {
-	        			buf.append(":");
-	        			buf.append(arg.getClass());
-	        			buf.append(":");
-	        			buf.append(arg.getClass().getClassLoader());
-	    			}
-	    		}
-    		}
-    		LOG.trace(header + obj + ":" + obj.getClass() + ":" + obj.getClass().getClassLoader() + method.getName() + "(" + buf.toString() + ")");
-    	}
     }
     
     /**

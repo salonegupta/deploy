@@ -26,9 +26,10 @@ public class ComponentId implements Serializable {
     private AssemblyId _assemblyId;
     private String     _componentName;
     
-    public ComponentId(AssemblyId assemblyId, String componentName) {
+	public ComponentId(AssemblyId assemblyId, String componentName) {
         if (assemblyId == null) throw new IllegalArgumentException("Assembly id cannot be null");
         if (componentName == null) throw new IllegalArgumentException("Component name cannot be null");
+        
         _assemblyId = assemblyId;
         _componentName = componentName;
     }
@@ -52,7 +53,7 @@ public class ComponentId implements Serializable {
     }
 
     public int hashCode() {
-        return _componentName.hashCode() + _assemblyId.hashCode();
+        return _componentName.hashCode() + _assemblyId.hashCode() * 29;
     }
     
     public String toString() {

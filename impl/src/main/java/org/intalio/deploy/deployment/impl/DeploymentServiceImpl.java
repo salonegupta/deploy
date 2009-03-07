@@ -63,6 +63,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     public static final String DEPLOY_COMPONENT = "DeploymentService";
     
     public static final String DATASOURCE_JNDI_PATH = "java:/comp/env/jdbc/BPMSDB";
+    
     //
     // Configuration
     //
@@ -307,6 +308,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
      * Deploy a packaged (zipped) assembly
      */
     DeploymentResult deployAssembly(String assemblyName, InputStream zip, boolean replaceExistingAssemblies, boolean activate) {
+    	if( LOG.isDebugEnabled() ) LOG.debug("DEPLOYMENT.deployAssembly(" + assemblyName + ", replaceExistingAssemblies=" + replaceExistingAssemblies + ", activate=" + activate + ")");
+
         assertStarted();
 
         if (assemblyName.indexOf(".") >= 0) {
@@ -401,7 +404,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             }
         }
 
-        TemporaryResult result = new TemporaryResult(aid);
+        TemporaryResult results = new TemporaryResult(aid);
         List<DeployedComponent> deployed = new ArrayList<DeployedComponent>();
 
         synchronized (DEPLOY_LOCK) {
@@ -422,32 +425,33 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                             // ignore directories without extension (no mapping)
                             continue;
                         }
-                        String componentManager = f.getName().substring(dot+1);
+                        String componentType = f.getName().substring(dot+1);
                         String componentName = f.getName().substring(0, dot);
                         ComponentId component = new ComponentId(aid, componentName);
 
-                        ComponentManager manager = getComponentManager(componentManager);
+                        ComponentManager manager = getComponentManager(componentType);
                         try {
-                            result.addAll(component, componentManager, manager.deploy(component, f, activate).getMessages());
-                            deployed.add(new DeployedComponent(component, f.getAbsolutePath(), componentManager));
+                        	ComponentManagerResult result = manager.deploy(component, f, activate);
+                            results.addAll(component, componentType, result.getMessages());
+                            deployed.add(new DeployedComponent(component, f.getAbsolutePath(), componentType, result.getDeployedResources()));
                         } catch (Exception except) {
                             String msg = _("Exception while deploying component {0}: {1}", componentName, except.getLocalizedMessage());
-                            result.add(component, componentManager, error(msg));
+                            results.add(component, componentType, error(msg));
                             LOG.error(msg, except);
                         }
                     }
                 } catch (Exception except) {
                     String msg = _("Exception while deploying assembly {0}: {1}", aid, except.getLocalizedMessage());
-                    result.add(null, null, error(msg));
+                    results.add(null, null, error(msg));
                     LOG.error(msg, except);
                 }
 
-                if (result.isSuccessful()) {
+                if (results.isSuccessful()) {
                     // update persistent state
                     DeployedAssembly assembly = loadAssemblyState(aid);
                     
                     _persist.retire(aid.getAssemblyName());
-                    _persist.add(assembly);
+                    _persist.add(assembly, deployed);
 
                     _persist.commitTransaction();
                     
@@ -461,37 +465,44 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                     for (DeployedComponent dc : deployed) {
                         try {
                             ComponentManager manager = getComponentManager(dc.getComponentManagerName());
-                            manager.undeploy(dc.getComponentId(), new ArrayList<String>());
+                            manager.undeploy(dc.getComponentId(), dc.getDeployedResources());
                         } catch (Exception except) {
                             String msg = _("Exception while undeploying component {0} after failed deployment: {1}", dc.getComponentId(),
                                     except.getLocalizedMessage());
-                            result.add(dc, error(msg));
+                            results.add(dc, error(msg));
                             LOG.error(msg, except);
                         }
                     }
                     _persist.rollbackTransaction("Deployment errors");
                 }
 
-                setMarkedAsDeployed(aid, result.isSuccessful());
+                setMarkedAsDeployed(aid, results.isSuccessful());
                 setMarkedAsInvalid(aid, false);
             } finally {
                 _persist.rollbackTransaction("Unknown reason"); 
             }
         }
         
-        return result.finalResult();
+        return results.finalResult();
     }
 
     /**
      * Undeploy an assembly by name
      */
     public DeploymentResult undeployAssembly(AssemblyId aid) {
+    	if( LOG.isDebugEnabled() ) LOG.debug("DEPLOYMENT.undeployAssembly(" + aid + ")");
+    	
         assertStarted();
         
         if (!exist(aid))
             return errorResult(aid, "Assembly directory does not exist: {0}", aid);
         
         DeployedAssembly assembly = loadAssemblyState(aid);
+        DeployedAssembly assemblyFromDatabase = _persist.load().get(aid);
+        if( assemblyFromDatabase != null ) {
+        	assembly = assemblyFromDatabase;
+        }
+        
         stopAndDispose(aid);
         if (cluster.isCoordinator()) {
             cluster.sendMessage(new UndeployedMessage(assembly));
@@ -539,6 +550,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                         available.add(aid);
                     }
                 }
+                LOG.debug(_("Available assemblies on file system: {0}", available));
             }
 
             // Phase 1: undeploy missing assemblies
@@ -561,6 +573,11 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             stopAndDispose(undeploy);
 
             for (DeployedAssembly assembly : undeploy) {
+            	DeployedAssembly assemblyFromDatabase = deployedMap.get(assembly.getAssemblyId());
+            	if( assemblyFromDatabase != null ) {
+            		assembly = assemblyFromDatabase;
+            	}
+            	
                 DeploymentResult result = undeployAssembly(assembly);
                 if (result.isSuccessful())
                     LOG.info(_("Undeployed assembly: {0}", assembly.getAssemblyId()));
@@ -644,7 +661,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 for (DeployedComponent dc : assembly.getDeployedComponents()) {
                     try {
                         ComponentManager manager = getComponentManager(dc.getComponentManagerName());
-                        manager.undeploy(dc.getComponentId(), new ArrayList<String>());
+                        manager.undeploy(dc.getComponentId(), dc.getDeployedResources());
                     } catch (Exception except) {
                         String msg = _("Exception while undeploying component {0}: {1}", dc.getComponentId(), except.getLocalizedMessage());
                         result.add(dc, error(msg));
@@ -677,12 +694,12 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     private void deployed(DeployedAssembly assembly, boolean activate) {
         for (DeployedComponent dc : assembly.getDeployedComponents()) {
             try {
-                LOG.debug(_("Deployed component {0}", dc));
+                if(LOG.isDebugEnabled()) LOG.debug(_("Deployed component {0}", dc));
                 ComponentManager manager = getComponentManager(dc.getComponentManagerName());
                 manager.deployed(dc.getComponentId(), dc.getComponentDir(), activate);
             } catch (Exception except) {
                 String msg = _("Error during deployment notification of component {0}: {1}", dc.getComponentId(), except);
-                LOG.error(msg, except);
+                if(LOG.isErrorEnabled()) LOG.error(msg, except);
                 break;
             }
         }
@@ -691,12 +708,12 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     public void onUndeployed(DeployedAssembly assembly) {
         for (DeployedComponent dc : assembly.getDeployedComponents()) {
             try {
-                LOG.debug(_("Undeployed component {0}", dc));
+            	if(LOG.isDebugEnabled()) LOG.debug(_("Undeployed component {0}", dc));
                 ComponentManager manager = getComponentManager(dc.getComponentManagerName());
                 manager.undeployed(dc.getComponentId());
             } catch (Exception except) {
                 String msg = _("Error during undeployment notification of component {0}: {1}", dc.getComponentId(), except);
-                LOG.error(msg, except);
+                if(LOG.isErrorEnabled()) LOG.error(msg, except);
                 break;
             }
         }
@@ -995,11 +1012,12 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 // ignore directories without extension (no mapping)
                 continue;
             }
-            String componentManager = componentDir.getName().substring(dot+1);
+            String componentType = componentDir.getName().substring(dot+1);
             String componentName = componentDir.getName().substring(0, dot);
             ComponentId component = new ComponentId(aid, componentName);
-            components.add(new DeployedComponent(component, componentDir.getAbsolutePath(), componentManager));
+            components.add(new DeployedComponent(component, componentDir.getAbsolutePath(), componentType));
         }
+        
         return new DeployedAssembly(aid, assemblyDir.getAbsolutePath(), components, false);
     }
 
