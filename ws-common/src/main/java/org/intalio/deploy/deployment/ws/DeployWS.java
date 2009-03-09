@@ -14,7 +14,7 @@ package org.intalio.deploy.deployment.ws;
 
 import static org.intalio.deploy.deployment.ws.DeployWSConstants.ASSEMBLY_NAME;
 import static org.intalio.deploy.deployment.ws.DeployWSConstants.ASSEMBLY_VERSION;
-import static org.intalio.deploy.deployment.ws.DeployWSConstants.REPLACE_EXISTING_ASSEMBLIES;
+import static org.intalio.deploy.deployment.ws.DeployWSConstants.ACTIVATE;
 import static org.intalio.deploy.deployment.ws.DeployWSConstants.ZIP;
 
 import java.io.File;
@@ -126,9 +126,9 @@ public class DeployWS {
         
         OMParser request = new OMParser(requestEl);
         String assemblyName = request.getRequiredString(ASSEMBLY_NAME);
-        boolean replaceExistingAssemblies = request.getRequiredBoolean(REPLACE_EXISTING_ASSEMBLIES);
+        boolean activate = request.getOptionalBoolean(ACTIVATE, true);
         InputStream zip = request.getInputStream(ZIP);
-        DeploymentResult result = _deployService.deployAssembly(assemblyName, zip, replaceExistingAssemblies);
+        DeploymentResult result = _deployService.deployAssembly(assemblyName, zip, activate);
         return OMParser.marshallDeploymentResult(result);
     }
     
@@ -148,4 +148,22 @@ public class DeployWS {
         return OMParser.marshallGetDeployedAssemblies(assemblies);
     }
 
+    public OMElement activate(OMElement requestEl) throws AxisFault {
+        if (!_initialized) throw new IllegalStateException("Deployment service not initialized");
+        OMParser request = new OMParser(requestEl);
+        String assemblyName = request.getRequiredString(ASSEMBLY_NAME);
+        int assemblyVersion = request.getRequiredInt(ASSEMBLY_VERSION);
+        AssemblyId aid = new AssemblyId(assemblyName, assemblyVersion);
+        DeploymentResult result = _deployService.undeployAssembly(aid);
+        return OMParser.marshallDeploymentResult(result);
+    }
+
+    public OMElement retire(OMElement requestEl) throws AxisFault {
+        if (!_initialized) throw new IllegalStateException("Deployment service not initialized");
+        OMParser request = new OMParser(requestEl);
+        String assemblyName = request.getRequiredString(ASSEMBLY_NAME);
+        AssemblyId aid = new AssemblyId(assemblyName);
+        DeploymentResult result = _deployService.retire(aid);
+        return OMParser.marshallDeploymentResult(result);
+    }
 }

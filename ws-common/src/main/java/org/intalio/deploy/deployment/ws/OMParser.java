@@ -117,6 +117,21 @@ public class OMParser {
         return "true".equalsIgnoreCase(text);
     }
     
+    public boolean getOptionalBoolean(QName parameter, boolean defaultVal) {
+    	boolean val = defaultVal;
+    	
+        OMElement e = _element.getFirstChildWithName(parameter);
+        if (e != null) {
+	        String text = e.getText();
+	        if (!"true".equalsIgnoreCase(text) && !"false".equalsIgnoreCase(text))
+	            throw new IllegalArgumentException("Invalid boolean parameter: " + parameter + " value: "+text);
+	        if (LOG.isDebugEnabled())
+	            LOG.debug("Parameter " + parameter + ": " + text + "value: "+text);
+	        val = "true".equalsIgnoreCase(text);
+	    }
+        
+        return val;
+    }
 
     public int getRequiredInt(QName parameter) {
         String value = getRequiredString(parameter);

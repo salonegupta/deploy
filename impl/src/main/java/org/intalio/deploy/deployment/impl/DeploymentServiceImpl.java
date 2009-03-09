@@ -862,6 +862,9 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 	}
 
 	public DeploymentResult retire(AssemblyId assemblyId) {
+		/*
+		 * Retires all versions for the assembly name; the given version number is ignored
+		 */
 		TemporaryResult results = new TemporaryResult(assemblyId);
 
 		DeployedAssembly assembly = loadAssemblyState(assemblyId);
