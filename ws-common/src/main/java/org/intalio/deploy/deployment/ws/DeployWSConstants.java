@@ -33,7 +33,6 @@ public class DeployWSConstants {
     public static final QName TOKEN = new QName(DEPLOY_NS.getNamespaceURI(), "token", DEPLOY_NS_PREFIX);
 
     /* Deploy Request */
-    
     public static final QName DEPLOY_REQUEST = new QName(DEPLOY_NS.getNamespaceURI(), "deployAssembly", DEPLOY_NS_PREFIX);
 
     public static final QName ASSEMBLY_NAME = new QName(DEPLOY_NS.getNamespaceURI(), "assemblyName", DEPLOY_NS_PREFIX);
@@ -41,8 +40,8 @@ public class DeployWSConstants {
     public static final QName REPLACE_EXISTING_ASSEMBLIES =
         new QName(DEPLOY_NS.getNamespaceURI(), "replaceExistingAssemblies", DEPLOY_NS_PREFIX);
 
-    public static final QName DEPLOY_CONTROL_PARAM =
-        new QName(DEPLOY_NS.getNamespaceURI(), "deployControlParam", DEPLOY_NS_PREFIX);
+    public static final QName ACTIVATE =
+        new QName(DEPLOY_NS.getNamespaceURI(), "activate", DEPLOY_NS_PREFIX);
 
     public static final String DEPLOY_CONTROL_PARAM_DO_NOT_ACTIVATE =
         "deployControlParamDoNotActivate";
@@ -88,4 +87,8 @@ public class DeployWSConstants {
     public static final QName COMPONENT_DIR = new QName(DEPLOY_NS.getNamespaceURI(), "componentDir", DEPLOY_NS_PREFIX);
     public static final QName COMPONENT_MANAGER = new QName(DEPLOY_NS.getNamespaceURI(), "componentManager", DEPLOY_NS_PREFIX);
     public static final QName COMPONENT_NAME = new QName(DEPLOY_NS.getNamespaceURI(), "componentName", DEPLOY_NS_PREFIX);
+
+    /* Activate Request */
+    public static final QName ACTIVATE_REQUEST = new QName(DEPLOY_NS.getNamespaceURI(), "activateAssembly", DEPLOY_NS_PREFIX);
+    public static final QName DEACTIVATE_REQUEST = new QName(DEPLOY_NS.getNamespaceURI(), "deactivateAssembly", DEPLOY_NS_PREFIX);
 }

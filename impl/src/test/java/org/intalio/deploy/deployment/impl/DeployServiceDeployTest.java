@@ -270,7 +270,7 @@ public class DeployServiceDeployTest extends TestCase {
         File assemblyZip = new File(TestUtils.getTestBase(), "assembly1.zip");
 
         {
-        DeploymentResult result = service.deployAssembly("assembly1", new FileInputStream(assemblyZip), false, false);
+        DeploymentResult result = service.deployAssembly("assembly1", new FileInputStream(assemblyZip), false);
         System.out.println("testDeployZip: "+result);
         assertTrue(result.isSuccessful());
         assertEquals("assembly1", result.getAssemblyId().getAssemblyName());
@@ -280,7 +280,7 @@ public class DeployServiceDeployTest extends TestCase {
         
         {
         // deploy new version
-        DeploymentResult result2 = service.deployAssembly("assembly1", new FileInputStream(assemblyZip), false, false);
+        DeploymentResult result2 = service.deployAssembly("assembly1", new FileInputStream(assemblyZip), false);
         System.out.println("testDeployZip: result2="+result2);
         assertTrue(result2.isSuccessful());
         assertEquals("assembly1", result2.getAssemblyId().getAssemblyName());
@@ -290,7 +290,8 @@ public class DeployServiceDeployTest extends TestCase {
         
         {
         // deploy and replace all existing versions
-        DeploymentResult result3 = service.deployAssembly("assembly1", new FileInputStream(assemblyZip), true, false);
+        service.setReplaceExistingAssemblies(true);
+        DeploymentResult result3 = service.deployAssembly("assembly1", new FileInputStream(assemblyZip), false);
         System.out.println("testDeployZip: result3="+result3);
         assertTrue(result3.isSuccessful());
         assertEquals("assembly1", result3.getAssemblyId().getAssemblyName());
@@ -392,7 +393,7 @@ public class DeployServiceDeployTest extends TestCase {
         File assemblyZip = new File(TestUtils.getTestBase(), "assembly1.zip");
 
         {
-        DeploymentResult result = service.deployAssembly("assembly1", new FileInputStream(assemblyZip), false, false);
+        DeploymentResult result = service.deployAssembly("assembly1", new FileInputStream(assemblyZip), false);
         assertTrue(result.isSuccessful());
         }
 

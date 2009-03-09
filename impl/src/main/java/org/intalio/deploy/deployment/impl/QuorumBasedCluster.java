@@ -33,7 +33,7 @@ import com.sun.enterprise.ee.cms.impl.common.JoinNotificationSignalImpl;
 public class QuorumBasedCluster implements CallBack, Cluster {
     private static final Logger LOG = LoggerFactory.getLogger(DeploymentServiceImpl.class);
 
-    public static final String DEPLOY_COMPONENT = "TempoDeploymentService";
+    public static final String DEPLOY_COMPONENT = "DeploymentService";
     
     private GroupManagementService gms;
 

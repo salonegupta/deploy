@@ -43,7 +43,7 @@ public class DeployWSTest extends TestCase {
 
     //@BeforeClass
     static {
-        String config = DeployWSTest.class.getClassLoader().getResource("tempo-deploy.xml").getFile();
+        String config = DeployWSTest.class.getClassLoader().getResource("deploy-service.xml").getFile();
         String dir = new File(config).getParent();
         System.setProperty(DeployWS.CONFIG_DIR_PROPERTY, dir);
 

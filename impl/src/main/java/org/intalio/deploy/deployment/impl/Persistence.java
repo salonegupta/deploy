@@ -85,6 +85,8 @@ public class Persistence {
      * Add a deployed assembly
      */
     void add(DeployedAssembly assemblyStateFromFileSystem, List<DeployedComponent> componentsDeployment) throws PersistenceException {
+    	if(LOG.isDebugEnabled()) LOG.debug("Persisting assembly: " + assemblyStateFromFileSystem + ", components: " + componentsDeployment);
+    	
         String name = assemblyStateFromFileSystem.getAssemblyId().getAssemblyName();
         int version = assemblyStateFromFileSystem.getAssemblyId().getAssemblyVersion();
         String adir = _deployDir.toURI().relativize((new File(assemblyStateFromFileSystem.getAssemblyDir())).toURI()).getPath();
@@ -93,7 +95,7 @@ public class Persistence {
         try {
             c = getConnection();
             // Insert assembly
-            if( LOG.isDebugEnabled() ) LOG.debug("DEPLOYMENT.assembly: " + name + "-" + version);
+            if( LOG.isDebugEnabled() ) LOG.debug("INSERT_DEPLOYMENT_ASSEMBLY: " + name + "-" + version);
             EasyStatement inserta = new EasyStatement(c, "INSERT INTO DEPLOY_ASSEMBLIES VALUES (?,?,?,?)");
             try {
                 inserta.write(name);
@@ -111,7 +113,7 @@ public class Persistence {
                 String cdir = assemblyDir.toURI().relativize(new File(dc.getComponentDir()).toURI()).getPath();
                 String manager = dc.getComponentManagerName();
 
-                if( LOG.isDebugEnabled() ) LOG.debug("DEPLOYMENT.component: " + name + "-" + version + "/" + component);
+                if( LOG.isDebugEnabled() ) LOG.debug("INSERT_DEPLOYMENT_COMPONENT: " + name + "-" + version + "/" + component);
                 EasyStatement insertc = new EasyStatement(c, "INSERT INTO DEPLOY_COMPONENTS VALUES (?,?,?,?,?)");
                 try {
                     insertc.write(name);
@@ -129,8 +131,7 @@ public class Persistence {
         		// only if the file system says the component is deployed
         		if( assemblyStateFromFileSystem.getDeployedComponents().contains(component)) {
 	        		for( String resource : component.getDeployedResources() ) {
-
-	        			if( LOG.isDebugEnabled() ) LOG.debug("DEPLOYMENT.resource: " + name + "-" + version + "/" + component);
+	        			if( LOG.isDebugEnabled() ) LOG.debug("INSERT_DEPLOYMENT_RESOURCE: " + name + "-" + version + "/" + component);
 	        			EasyStatement stmt = new EasyStatement(c, "INSERT INTO DEPLOY_RESOURCES(ASSEMBLY, VERSION, COMPONENT, MANAGER, RESOURCE_ID) VALUES(?, ?, ?, ?, ?)");
 		                stmt.write(component.getComponentId().getAssemblyId().getAssemblyName());
 		                stmt.write(component.getComponentId().getAssemblyId().getAssemblyVersion());
@@ -149,6 +150,34 @@ public class Persistence {
         }
     }
     
+    /**
+     * Retires any currently active version and activates the given version of assembly.
+     * 
+     * @param assembly
+     * @param version
+     * @throws PersistenceException
+     */
+    void activate(String assembly, int version) throws PersistenceException {
+    	retire(assembly);
+    	
+        Connection c = null;
+        try {
+            c = getConnection();
+            EasyStatement inserta = new EasyStatement(c, "UPDATE DEPLOY_ASSEMBLIES SET CACTIVE = 0 WHERE ASSEMBLY = ? AND VERSION = ?");
+            try {
+                inserta.write(assembly);
+                inserta.write(version);
+                inserta.execute();
+            } finally {
+                inserta.close();
+            }
+        } catch (SQLException e) {
+            throw new PersistenceException(e);
+        } finally {
+            close(c);
+        }
+    }
+
     /**
      * Retire *any* currently active version of the current assembly
      */

@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.rmi.Remote;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -127,8 +126,10 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     private DataSource _dataSource;
 
     private Persistence _persist;
+    
+    private boolean replaceExistingAssemblies = false;
 
-    // the Null-Object pattern
+	// the Null-Object pattern
     private Cluster cluster = new SingleNodeCluster();
     
     //
@@ -165,6 +166,10 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     public void setScanPeriod(int scanPeriod) {
         _scanPeriod = scanPeriod;
     }
+
+    public void setReplaceExistingAssemblies(boolean replaceExistingAssemblies) {
+		this.replaceExistingAssemblies = replaceExistingAssemblies;
+	}
 
     public void addComponentTypeMapping(String componentType, String componentManager) {
         _componentTypes.put(componentType, componentManager);
@@ -228,7 +233,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             _persist = new Persistence(new File(_deployDir), _dataSource);
             _timer = new Timer("Deployment Service Timer", true);
             _serviceState = ServiceState.INITIALIZED;
-            LOG.info(_("DeploymentService state is now INITIALIZED"));
+            LOG.info(_("DeploymentService state is now INITIALIZED(replaceExistingAssemblies=" + replaceExistingAssemblies + ")."));
         }
     }
 
@@ -241,7 +246,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 throw new IllegalStateException("Service not initialized");
             }
             _serviceState = ServiceState.CLUSTERIZING;
-            LOG.info(_("DeploymentService state is now CLUSTERIZING"));
+            LOG.info(_("DeploymentService state is now CLUSTERIZING."));
             _timer.schedule(clusterizeTask, 0);
         }
     }
@@ -289,25 +294,14 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     //
     // Operations
     //
-    public DeploymentResult deployAssembly(String assemblyName, InputStream zip, 
-            DeployControlParam param ) throws RemoteException {
-    	if( DeployControlParam.REPLACE_EXISTING_ASSEMBLIES_AND_ACTIVATE.equals(param) ) {
-    		return deployAssembly(assemblyName, zip, true, true);
-    	} else if( DeployControlParam.DO_NOT_ACTIVATE.equals(param) ) {
-    		return deployAssembly(assemblyName, zip, false, false);
-    	} else {
-    		return deployAssembly(assemblyName, zip, false, true);
-    	}
-    }
-
-    public DeploymentResult deployAssembly(String assemblyName, InputStream zip, boolean replaceExistingAssemblies) {
-    	return deployAssembly(assemblyName, zip, replaceExistingAssemblies, true);
+    public DeploymentResult deployAssembly(String assemblyName, InputStream zip) {
+    	return deployAssembly(assemblyName, zip, true);
     }
 
     /**
      * Deploy a packaged (zipped) assembly
      */
-    DeploymentResult deployAssembly(String assemblyName, InputStream zip, boolean replaceExistingAssemblies, boolean activate) {
+    public DeploymentResult deployAssembly(String assemblyName, InputStream zip, boolean activate) {
     	if( LOG.isDebugEnabled() ) LOG.debug("DEPLOYMENT.deployAssembly(" + assemblyName + ", replaceExistingAssemblies=" + replaceExistingAssemblies + ", activate=" + activate + ")");
 
         assertStarted();
@@ -608,6 +602,9 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                             LOG.error(_("Error deploying assembly {0}. Assembly will be marked as invalid.", files[i]), except);
                             setMarkedAsInvalid(aid, true);
                         }
+                    } else if(isMarkedAsDeployed(aid) && !deployedMap.containsKey(aid)) {
+                    	if(LOG.isWarnEnabled()) LOG.warn(_("Inconsistent states found between the file system and the deployment service database!!"));
+                    	if(LOG.isWarnEnabled()) LOG.warn(_("A valid assembly for " + aid + " exists on the file system but missing in the database; You can re-deploy the assembly by removing the .deployed files for the assemblies."));
                     }
                 }
             }
@@ -843,7 +840,9 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         }
     }
 
-	public void activate(AssemblyId assemblyId) {
+	public DeploymentResult activate(AssemblyId assemblyId) {
+		TemporaryResult results = new TemporaryResult(assemblyId);
+		
         DeployedAssembly assembly = loadAssemblyState(assemblyId);
         for (DeployedComponent dc : assembly.getDeployedComponents()) {
             ComponentManager manager = getComponentManager(dc.getComponentManagerName());
@@ -852,15 +851,20 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 manager.activate(dc.getComponentId());
             } catch (Exception except) {
                 String msg = _("Error while activating component {0}: {1}", dc.getComponentId(), except);
+                results.add(dc.getComponentId(), dc.getComponentManagerName(), new DeploymentMessage(Level.ERROR, msg));
                 LOG.error(msg, except);
             }
         }
-        
+        _persist.activate(assemblyId.getAssemblyName(), assemblyId.getAssemblyVersion());
         cluster.sendMessage(new ActivatedMessage(assembly));
+        
+        return results.finalResult(); 
 	}
 
-	public void retire(AssemblyId assemblyId) {
-        DeployedAssembly assembly = loadAssemblyState(assemblyId);
+	public DeploymentResult retire(AssemblyId assemblyId) {
+		TemporaryResult results = new TemporaryResult(assemblyId);
+
+		DeployedAssembly assembly = loadAssemblyState(assemblyId);
         for (DeployedComponent dc : assembly.getDeployedComponents()) {
             ComponentManager manager = getComponentManager(dc.getComponentManagerName());
             try {
@@ -868,11 +872,14 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 manager.retire(dc.getComponentId());
             } catch (Exception except) {
                 String msg = _("Error while retiring component {0}: {1}", dc.getComponentId(), except);
+                results.add(dc.getComponentId(), dc.getComponentManagerName(), new DeploymentMessage(Level.ERROR, msg));
                 LOG.error(msg, except);
             }
         }
-
+        _persist.retire(assemblyId.getAssemblyName());
         cluster.sendMessage(new RetiredMessage(assembly));
+
+        return results.finalResult(); 
 	}
 
 	private void checkRequiredComponentManagersAvailable() {
