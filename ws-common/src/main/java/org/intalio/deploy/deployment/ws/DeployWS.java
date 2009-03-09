@@ -154,7 +154,7 @@ public class DeployWS {
         String assemblyName = request.getRequiredString(ASSEMBLY_NAME);
         int assemblyVersion = request.getRequiredInt(ASSEMBLY_VERSION);
         AssemblyId aid = new AssemblyId(assemblyName, assemblyVersion);
-        DeploymentResult result = _deployService.undeployAssembly(aid);
+        DeploymentResult result = _deployService.activate(aid);
         return OMParser.marshallDeploymentResult(result);
     }
 
