@@ -58,7 +58,7 @@ public class MockComponentManager implements ComponentManager {
         return new ComponentManagerResult(messages);  
     }
 
-    public void initialize(ComponentId name, File path) {
+    public void initialize(ComponentId name, File path, List<String> deployedResources, boolean active) {
         if (_failActivate) throw new RuntimeException("Activate force failed");
 
         Component c = _components.get(name);
@@ -66,7 +66,7 @@ public class MockComponentManager implements ComponentManager {
         c._activated = true;
     }
 
-    public void dispose(ComponentId name) {
+    public void dispose(ComponentId name, File path, List<String> deployedResources, boolean active) {
         if (_failDeactivate) throw new RuntimeException("Deactivate force-failed");
 
         Component c = _components.get(name);
@@ -74,7 +74,7 @@ public class MockComponentManager implements ComponentManager {
         c._activated = false;
     }
 
-    public void start(ComponentId name) {
+    public void start(ComponentId name, File path, List<String> deployedResources, boolean active) {
         if (_failStart) throw new RuntimeException("Start force failed");
 
         Component c = _components.get(name);
@@ -82,7 +82,7 @@ public class MockComponentManager implements ComponentManager {
         c._started = true;
     }
 
-    public void stop(ComponentId name) {
+    public void stop(ComponentId name, File path, List<String> deployedResources, boolean active) {
         if (_failStop) throw new RuntimeException("Stop force failed");
 
         Component c = _components.get(name);
@@ -90,22 +90,38 @@ public class MockComponentManager implements ComponentManager {
         c._started = false;
     }
 
-    public void undeploy(ComponentId name, List<String> deployedObjects) {
+    public void undeploy(ComponentId name, File path, List<String> deployedResources) {
         if (_failUndeploy) throw new RuntimeException("Undeploy force failed");
     }
+
+    public void deployed(ComponentId name, String path, List<String> deployedResources, boolean active) {
+        _components.put(name, new Component(name, new File(path)));
+    }
+
+    public void undeployed(ComponentId name, String path, List<String> deployedResources) {
+        _components.remove(name);
+    }
+
+	public void activate(ComponentId name, File path, List<String> deployedResources) {
+        if (_failActivate) throw new RuntimeException("Activate force-failed");
+	}
+
+	public void retire(ComponentId name, File path, List<String> deployedResources) {
+        if (_failRetire) throw new RuntimeException("Retire force-failed");
+	}
+
+	public void activated(ComponentId name, String path, List<String> deployedResources) {
+        if (_failActivate) throw new RuntimeException("Activated force-failed");
+	}
+
+	public void retired(ComponentId name, String path, List<String> deployedResources) {
+        if (_failRetire) throw new RuntimeException("Retired force-failed");
+	}
 
     public boolean isDeployed(ComponentId name) {
         return _components.containsKey(name);
     }
     
-    public void deployed(ComponentId name, String path, boolean activate) {
-        _components.put(name, new Component(name, new File(path)));
-    }
-
-    public void undeployed(ComponentId name) {
-        _components.remove(name);
-    }
-
     public boolean isActivated(ComponentId name) {
         Component c = _components.get(name);
         if (c == null) throw new RuntimeException("Component "+name+" not deployed");
@@ -123,20 +139,4 @@ public class MockComponentManager implements ComponentManager {
             _path = path;
         }
     }
-
-	public void activate(ComponentId name) {
-        if (_failActivate) throw new RuntimeException("Activate force-failed");
-	}
-
-	public void retire(ComponentId name) {
-        if (_failRetire) throw new RuntimeException("Retire force-failed");
-	}
-
-	public void activated(ComponentId name) {
-        if (_failActivate) throw new RuntimeException("Activated force-failed");
-	}
-
-	public void retired(ComponentId name) {
-        if (_failRetire) throw new RuntimeException("Retired force-failed");
-	}
 }

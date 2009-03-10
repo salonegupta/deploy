@@ -58,11 +58,12 @@ public interface ComponentManager extends Remote {
      * <p>
      * If the ComponentManager is unable to deploy the component, it should return ERROR-level 
      * messages with an appropriate description of the issue.
-     *   
-     * @param name
-     * @param path
-     * @param activate
-     * @return
+     *
+     * @param name Component identifier
+     * @param path Component root directory
+     * @param deployedResources resources that were deployed by the component manager for this component
+     * @param activate indicates that the assembly containing this component is the default(active) version
+     * @return the result from the component manager
      */
     ComponentManagerResult deploy(ComponentId name, File path, boolean activate);
 
@@ -79,8 +80,10 @@ public interface ComponentManager extends Remote {
      * 
      * @param name Component identifier
      * @param path Component root directory
+     * @param deployedResources resources that were deployed by the component manager for this component
+     * @param active indicates that the assembly containing this component is the default(active) version
      */
-    void initialize(ComponentId name, File path);
+    void initialize(ComponentId name, File path, List<String> deployedResources, boolean active);
 
     /**
      * Starts a component.
@@ -89,8 +92,13 @@ public interface ComponentManager extends Remote {
      * Called after initialize() to start the execution of a component (if necessary).  When this method is called,
      * the component may initiate processing, such as polling messages from a queue, dispatching new requests or
      * generating events.
+     *
+     * @param name Component identifier
+     * @param path Component root directory
+     * @param deployedResources resources that were deployed by the component manager for this component
+     * @param active indicates that the assembly containing this component is the default(active) version
      */
-    void start(ComponentId name);
+    void start(ComponentId name, File path, List<String> deployedResources, boolean active);
 
     /**
      * Stops a component.
@@ -99,8 +107,13 @@ public interface ComponentManager extends Remote {
      * Called before dispose() to stop the execution of a component (if necessary).  After this method returns,
      * the component should no longer initiate any new processing.   It may still process outstanding requests
      * until deactivate() is called and returns.
+     *
+     * @param name Component identifier
+     * @param path Component root directory
+     * @param deployedResources resources that were deployed by the component manager for this component
+     * @param active indicates that the assembly containing this component is the default(active) version
      */
-    void stop(ComponentId name);
+    void stop(ComponentId name, File path, List<String> deployedResources, boolean active);
 
     /**
      * De-initializes a component.
@@ -108,33 +121,47 @@ public interface ComponentManager extends Remote {
      * In a clustered environment, called on every node before undeployment.  This method effectively renders
      * the component unavailable for processing new requests.  The ComponentManager should release any 
      * transient resources allocated for the purpose of making the component active.
+     *
+     * @param name Component identifier
+     * @param path Component root directory
+     * @param deployedResources resources that were deployed by the component manager for this component
+     * @param active indicates that the assembly containing this component is the default(active) version
      */
-    void dispose(ComponentId name);
+    void dispose(ComponentId name, File path, List<String> deployedResources, boolean active);
 
     /**
      * Undeploys an assembly component.
      * <p>
      * In a clustered environment, this method is called on a single node (the coordinator).
      * This method must release any persistent resources previously allocated or used by the component.
+     *
+     * @param name Component identifier
+     * @param path Component root directory
+     * @param deployedResources resources that were deployed by the component manager for this component
      */
-    void undeploy(ComponentId name, List<String> deployedResources);
+    void undeploy(ComponentId name, File path, List<String> deployedResources);
 
     /**
      * Activates the version of the component specified in the ComponentId. To activate a version is to
      * set the version as the default one. This method retires any pre-activated versions if they are
      * different from the specified version.
      * 
-     * @param name
+     *
+     * @param name Component identifier
+     * @param path Component root directory
+     * @param deployedResources resources that were deployed by the component manager for this component
      */
-    void activate(ComponentId name);
+    void activate(ComponentId name, File path, List<String> deployedResources);
     
     /**
      * Retires the version of the component specified in the given ComponentId. It does nothing if the given version
      * is already retired.
-     * 
-     * @param name
+     *
+     * @param name Component identifier
+     * @param path Component root directory
+     * @param deployedResources resources that were deployed by the component manager for this component
      */
-    void retire(ComponentId name);
+    void retire(ComponentId name, File path, List<String> deployedResources);
     
     /**
      * Notification of deployed component.
@@ -144,9 +171,10 @@ public interface ComponentManager extends Remote {
      * 
      * @param name Component identifier
      * @param path Component root directory
-     * @param activate when set to true, the version is also activated
+     * @param deployedResources resources that were deployed by the component manager for this component
+     * @param active indicates that the assembly containing this component is the default(active) version
      */
-    void deployed(ComponentId name, String path, boolean activate);
+    void deployed(ComponentId name, String path, List<String> deployedResources, boolean active);
 
     /**
      * Notification of undeployed component.
@@ -155,22 +183,28 @@ public interface ComponentManager extends Remote {
      * <p>
      * The component artifacts may not be available anymore, hence the component directory is not 
      * provided to the ComponentManager. 
-     * 
+     *
      * @param name Component identifier
+     * @param path Component root directory
+     * @param deployedResources resources that were deployed by the component manager for this component
      */
-    void undeployed(ComponentId name);
+    void undeployed(ComponentId name, String path, List<String> deployedResources);
     
     /**
      * Notification of activated component
      * 
-     * @param name
+     * @param name Component identifier
+     * @param path Component root directory
+     * @param deployedResources resources that were deployed by the component manager for this component
      */
-    void activated(ComponentId name);
+    void activated(ComponentId name, String path, List<String> deployedResources);
 
     /**
      * Notification of retired component
-     * 
-     * @param name
+     *
+     * @param name Component identifier
+     * @param path Component root directory
+     * @param deployedResources resources that were deployed by the component manager for this component
      */
-    void retired(ComponentId name);
+    void retired(ComponentId name, String path, List<String> deployedResources);
 }

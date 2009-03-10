@@ -65,51 +65,51 @@ public class RemoteComponentManager implements ComponentManager {
         }
     }
     
-    public void undeploy(ComponentId name, List<String> deployedObjects) {
-        getComponentManager().undeploy(name, deployedObjects);
+    public void undeploy(ComponentId name, File path, List<String> deployedObjects) {
+        getComponentManager().undeploy(name, path, deployedObjects);
     }
 
-    public void initialize(ComponentId name, File path) {
-        getComponentManager().initialize(name, path);
+    public void initialize(ComponentId name, File path, List<String> deployedResources, boolean active) {
+        getComponentManager().initialize(name, path, deployedResources, active);
     }
 
-    public void dispose(ComponentId name) {
-        getComponentManager().dispose(name);
+    public void dispose(ComponentId name, File path, List<String> deployedResources, boolean active) {
+        getComponentManager().dispose(name, path, deployedResources, active);
     }
 
-    public void start(ComponentId name) {
-        getComponentManager().start(name);
+    public void start(ComponentId name, File path, List<String> deployedResources, boolean active) {
+        getComponentManager().start(name, path, deployedResources, active);
     }
 
-    public void stop(ComponentId name) {
-        getComponentManager().stop(name);
+    public void stop(ComponentId name, File path, List<String> deployedResources, boolean active) {
+        getComponentManager().stop(name, path, deployedResources, active);
     }
 
-    public void deployed(ComponentId name, String path, boolean activate) {
-        getComponentManager().deployed(name, path, activate);
+    public void deployed(ComponentId name, String path, List<String> deployedResources, boolean active) {
+        getComponentManager().deployed(name, path, deployedResources, active);
     }
 
-    public void undeployed(ComponentId name) {
-        getComponentManager().undeployed(name);
+    public void undeployed(ComponentId name, String path, List<String> deployedResources) {
+        getComponentManager().undeployed(name, path, deployedResources);
     }
 
-	public void activate(ComponentId name) {
-		getComponentManager().activate(name);
+	public void activate(ComponentId name, File path, List<String> deployedResources) {
+		getComponentManager().activate(name, path, deployedResources);
 	}
 
-	public void activated(ComponentId name) {
-		getComponentManager().activated(name);
+	public void activated(ComponentId name, String path, List<String> deployedResources) {
+		getComponentManager().activated(name, path, deployedResources);
 	}
 
 	public ComponentManagerResult deploy(ComponentId name, File path, boolean activate) {
 		return getComponentManager().deploy(name, path, activate);
 	}
 
-	public void retire(ComponentId name) {
-		getComponentManager().retire(name);
+	public void retire(ComponentId name, File path, List<String> deployedResources) {
+		getComponentManager().retire(name, path, deployedResources);
 	}
 
-	public void retired(ComponentId name) {
-		getComponentManager().retired(name);
+	public void retired(ComponentId name, String path, List<String> deployedResources) {
+		getComponentManager().retired(name, path, deployedResources);
 	}
 }
