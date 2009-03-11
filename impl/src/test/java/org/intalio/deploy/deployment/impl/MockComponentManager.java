@@ -94,11 +94,11 @@ public class MockComponentManager implements ComponentManager {
         if (_failUndeploy) throw new RuntimeException("Undeploy force failed");
     }
 
-    public void deployed(ComponentId name, String path, List<String> deployedResources, boolean active) {
-        _components.put(name, new Component(name, new File(path)));
+    public void deployed(ComponentId name, File path, List<String> deployedResources, boolean active) {
+        _components.put(name, new Component(name, path));
     }
 
-    public void undeployed(ComponentId name, String path, List<String> deployedResources) {
+    public void undeployed(ComponentId name, File path, List<String> deployedResources) {
         _components.remove(name);
     }
 
@@ -110,11 +110,11 @@ public class MockComponentManager implements ComponentManager {
         if (_failRetire) throw new RuntimeException("Retire force-failed");
 	}
 
-	public void activated(ComponentId name, String path, List<String> deployedResources) {
+	public void activated(ComponentId name, File path, List<String> deployedResources) {
         if (_failActivate) throw new RuntimeException("Activated force-failed");
 	}
 
-	public void retired(ComponentId name, String path, List<String> deployedResources) {
+	public void retired(ComponentId name, File path, List<String> deployedResources) {
         if (_failRetire) throw new RuntimeException("Retired force-failed");
 	}
 

@@ -174,7 +174,7 @@ public interface ComponentManager extends Remote {
      * @param deployedResources resources that were deployed by the component manager for this component
      * @param active indicates that the assembly containing this component is the default(active) version
      */
-    void deployed(ComponentId name, String path, List<String> deployedResources, boolean active);
+    void deployed(ComponentId name, File path, List<String> deployedResources, boolean active);
 
     /**
      * Notification of undeployed component.
@@ -188,7 +188,7 @@ public interface ComponentManager extends Remote {
      * @param path Component root directory
      * @param deployedResources resources that were deployed by the component manager for this component
      */
-    void undeployed(ComponentId name, String path, List<String> deployedResources);
+    void undeployed(ComponentId name, File path, List<String> deployedResources);
     
     /**
      * Notification of activated component
@@ -197,7 +197,7 @@ public interface ComponentManager extends Remote {
      * @param path Component root directory
      * @param deployedResources resources that were deployed by the component manager for this component
      */
-    void activated(ComponentId name, String path, List<String> deployedResources);
+    void activated(ComponentId name, File path, List<String> deployedResources);
 
     /**
      * Notification of retired component
@@ -206,5 +206,5 @@ public interface ComponentManager extends Remote {
      * @param path Component root directory
      * @param deployedResources resources that were deployed by the component manager for this component
      */
-    void retired(ComponentId name, String path, List<String> deployedResources);
+    void retired(ComponentId name, File path, List<String> deployedResources);
 }

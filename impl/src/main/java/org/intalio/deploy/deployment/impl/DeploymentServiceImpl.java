@@ -699,7 +699,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             try {
                 if(LOG.isDebugEnabled()) LOG.debug(_("Deployed component {0}", dc));
                 ComponentManager manager = getComponentManager(dc.getComponentManagerName());
-                manager.deployed(dc.getComponentId(), dc.getComponentDir(), dc.getDeployedResources(), activate);
+                manager.deployed(dc.getComponentId(), new File(dc.getComponentDir()), dc.getDeployedResources(), activate);
             } catch (Exception except) {
                 String msg = _("Error during deployment notification of component {0}: {1}", dc.getComponentId(), except);
                 if(LOG.isErrorEnabled()) LOG.error(msg, except);
@@ -713,7 +713,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             try {
             	if(LOG.isDebugEnabled()) LOG.debug(_("Undeployed component {0}", dc));
                 ComponentManager manager = getComponentManager(dc.getComponentManagerName());
-                manager.undeployed(dc.getComponentId(), dc.getComponentDir(), dc.getDeployedResources());
+                manager.undeployed(dc.getComponentId(), new File(dc.getComponentDir()), dc.getDeployedResources());
             } catch (Exception except) {
                 String msg = _("Error during undeployment notification of component {0}: {1}", dc.getComponentId(), except);
                 if(LOG.isErrorEnabled()) LOG.error(msg, except);
@@ -727,7 +727,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             try {
                 LOG.debug(_("Activated component {0}", dc));
                 ComponentManager manager = getComponentManager(dc.getComponentManagerName());
-                manager.activated(dc.getComponentId(), dc.getComponentDir(), dc.getDeployedResources());
+                manager.activated(dc.getComponentId(), new File(dc.getComponentDir()), dc.getDeployedResources());
             } catch (Exception except) {
                 String msg = _("Error during activation notification of component {0}: {1}", dc.getComponentId(), except);
                 LOG.error(msg, except);
@@ -741,7 +741,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             try {
                 LOG.debug(_("Retired component {0}", dc));
                 ComponentManager manager = getComponentManager(dc.getComponentManagerName());
-                manager.retired(dc.getComponentId(), dc.getComponentDir(), dc.getDeployedResources());
+                manager.retired(dc.getComponentId(), new File(dc.getComponentDir()), dc.getDeployedResources());
             } catch (Exception except) {
                 String msg = _("Error during retirement notification of component {0}: {1}", dc.getComponentId(), except);
                 LOG.error(msg, except);
@@ -939,7 +939,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             for( DeployedAssembly assembly : assemblies ) {
             	for( DeployedComponent component : assembly.getDeployedComponents() ) {
             		ComponentManager manager = _componentManagers.get(component.getComponentManagerName());
-            		manager.deployed(component.getComponentId(), component.getComponentDir(), component.getDeployedResources(), assembly.isActive());
+            		manager.deployed(component.getComponentId(), new File(component.getComponentDir()), component.getDeployedResources(), assembly.isActive());
             	}
             }
             
