@@ -597,17 +597,11 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                         try {
                         	// auto-detected assemblies are always activated after deployment
                             DeploymentResult result = deployExplodedAssembly(files[i], true);
-                            if (_serviceState == ServiceState.STARTED) {
-                                initializeAndStart(aid);
-                            }
-                            if (result.isSuccessful())
-                                LOG.info(_("Deployed Assembly: {0}", result));
-                            else 
-                                LOG.warn(_("Assembly deployment failed: {0}", result));
-                            
                             if (result.isSuccessful()) {
+                                LOG.info(_("Deployed Assembly: {0}", result));
                                 clearMarkedAsInvalid(aid);
                             } else {
+                                LOG.warn(_("Assembly deployment failed: {0}", result));
                                 setMarkedAsInvalid(aid, result.toString());
                             }
                         } catch (Exception except) {
