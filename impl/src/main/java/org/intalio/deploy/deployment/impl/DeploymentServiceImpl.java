@@ -13,9 +13,11 @@ package org.intalio.deploy.deployment.impl;
 
 import static org.intalio.deploy.deployment.impl.LocalizedMessages._;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.FileWriter;
 import java.rmi.Remote;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -340,7 +342,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
         synchronized (DEPLOY_LOCK) {
             try {
-                setMarkedAsInvalid(aid, true);
+                setMarkedAsInvalid(aid, _("Deploying {0} ...", aid));
 
                 File assemblyDir = createAssemblyDir(aid);
                 DeploymentResult result = null;
@@ -356,7 +358,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             } catch (Exception except) {
                 throw new RuntimeException(except);
             } finally {
-                setMarkedAsInvalid(aid, false);
+                clearMarkedAsInvalid(aid);
             }
         }
     }
@@ -391,7 +393,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         }
 
         // mark as invalid while we deploy to avoid concurrency issues with scanner
-        setMarkedAsInvalid(aid, true);
+        setMarkedAsInvalid(aid, _("Deploying {0} ...", aid));
 
         // if assemblyDir is outside deployDir, copy files into deployDir
         if (!local) {
@@ -477,7 +479,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 }
 
                 setMarkedAsDeployed(aid, results.isSuccessful());
-                setMarkedAsInvalid(aid, false);
+                clearMarkedAsInvalid(aid);
             } finally {
                 _persist.rollbackTransaction("Unknown reason"); 
             }
@@ -603,10 +605,14 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                             else 
                                 LOG.warn(_("Assembly deployment failed: {0}", result));
                             
-                            setMarkedAsInvalid(aid, !result.isSuccessful());
+                            if (result.isSuccessful()) {
+                                clearMarkedAsInvalid(aid);
+                            } else {
+                                setMarkedAsInvalid(aid, result.toString());
+                            }
                         } catch (Exception except) {
                             LOG.error(_("Error deploying assembly {0}. Assembly will be marked as invalid.", files[i]), except);
-                            setMarkedAsInvalid(aid, true);
+                            setMarkedAsInvalid(aid, except.toString());
                         }
                     } else if(isMarkedAsDeployed(aid) && !deployedMap.containsKey(aid)) {
                     	if(LOG.isWarnEnabled()) LOG.warn(_("Inconsistent states found between the file system and the deployment service database!!"));
@@ -680,7 +686,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 _persist.remove(aid);
 
                 if (!result.isSuccessful() && exist(aid)) {
-                    setMarkedAsInvalid(aid, true);
+                    setMarkedAsInvalid(aid, result.toString());
                 }
                 setMarkedAsDeployed(aid, false);
             }
@@ -938,7 +944,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             // let the runtime ComponentManagers be aware of the deployed components
             for( DeployedAssembly assembly : assemblies ) {
             	for( DeployedComponent component : assembly.getDeployedComponents() ) {
-            		ComponentManager manager = _componentManagers.get(component.getComponentManagerName());
+            		ComponentManager manager = getComponentManager(component.getComponentManagerName());
             		manager.deployed(component.getComponentId(), new File(component.getComponentDir()), component.getDeployedResources(), assembly.isActive());
             	}
             }
@@ -1095,12 +1101,28 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         return getInvalidFile(aid).exists();
     }
 
-    private void setMarkedAsInvalid(AssemblyId aid, boolean isValid) {
+    private void clearMarkedAsInvalid(AssemblyId aid) {
         File invalid = getInvalidFile(aid);
-        if (isValid)
-            Utils.createFile(invalid);
-        else
-            Utils.deleteFile(invalid);
+        Utils.deleteFile(invalid);
+    }
+
+    private void setMarkedAsInvalid(AssemblyId aid, String message) {
+        File invalid = getInvalidFile(aid);
+        Utils.createFile(invalid);
+        FileWriter writer = null;
+        BufferedWriter out = null;
+        try {
+            writer = new FileWriter(invalid);
+            out = new BufferedWriter(writer);
+            out.write(message);
+            out.close();
+        } catch (Exception e) {
+            LOG.error(_("Error while writing to {0}", invalid), e);
+        } finally {
+            try {
+              if (writer != null) writer.close();
+            } catch (Exception e) { /* ignore */ }
+        }
     }
 
     private DeploymentResult convertToResult(Exception except, AssemblyId aid) {
