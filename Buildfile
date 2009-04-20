@@ -44,7 +44,7 @@ define "deploy" do
   define "ws-client" do
     compile.with projects("api", "ws-common"), 
                  AXIOM, AXIS2, SLF4J, STAX_API, SPRING[:core]
-    test.with project("impl"), project("impl").test.compile.target, APACHE_COMMONS[:httpclient], APACHE_COMMONS[:codec], LOG4J, SUNMAIL, XERCES, WS_COMMONS_SCHEMA, WSDL4J, WOODSTOX 
+    test.with project("impl"), project("impl").test.compile.target, project("registry"), APACHE_COMMONS[:httpclient], APACHE_COMMONS[:codec], APACHE_COMMONS[:dbcp], APACHE_COMMONS[:pool], LOG4J, SUNMAIL, XERCES, WS_COMMONS_SCHEMA, WSDL4J, WOODSTOX, APACHE_DERBY, APACHE_DERBY_NET, APACHE_DERBY_CLIENT 
 
     # Remember to set JAVA_OPTIONS before starting Jetty
     # export JAVA_OPTIONS=-Dorg.intalio.tempo.configDirectory=/home/boisvert/svn/tempo/security-ws2/src/test/resources

@@ -8,7 +8,7 @@
         <property name="password" value="APP"/>
     </bean>
     
-  	<bean id="clusterConfig" class="org.intalio.deploy.deployment.impl.QuorumBasedCluster">
+  	<bean id="clusterConfig" class="org.intalio.deploy.deployment.impl.clustering.QuorumBasedCluster">
         <property name="groupName" value="test"/>
         <property name="serverId" value="server-b"/>
         <property name="clusterSize" value="3"/>
