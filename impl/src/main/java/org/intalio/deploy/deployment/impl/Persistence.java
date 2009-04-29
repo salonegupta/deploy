@@ -101,7 +101,7 @@ public class Persistence {
                 inserta.write(name);
                 inserta.write(version);
                 inserta.write(adir);
-                inserta.write(active);
+                inserta.write(active?1:0);
                 inserta.execute();
             } finally {
                 inserta.close();
@@ -216,7 +216,7 @@ public class Persistence {
                     String assembly = rs.readString();
                     int version = rs.readInt();
                     String adir = rs.readString();
-                    boolean active = rs.readBoolean();
+                    boolean active = rs.readInt() != 0;
                     AssemblyId aid = new AssemblyId(assembly, version);
                     adir = (new File(_deployDir, adir)).toString();
                     DeployedAssembly da = new DeployedAssembly(aid, adir, new ArrayList<DeployedComponent>(), active);
