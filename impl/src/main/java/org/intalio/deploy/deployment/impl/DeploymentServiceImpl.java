@@ -69,7 +69,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
     public static final String DEPLOY_COMPONENT = "DeploymentService";
     
-    public static final String DATASOURCE_JNDI_PATH = "java:/comp/env/jdbc/BPMSDB";
+    public static final String DEFAULT_DATASOURCE_JNDI_PATH = "java:/comp/env/jdbc/BPMSDB";
     
     //
     // Configuration
@@ -80,6 +80,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     private String _deployDir = SystemPropertyUtils.resolvePlaceholders(DEFAULT_DEPLOY_DIR);
 
     private List<String> _requiredComponentManagers = new ArrayList<String>();
+    
+    private String _dataSourceJndiPath = DEFAULT_DATASOURCE_JNDI_PATH;
 
     //
     // Internal state
@@ -215,6 +217,9 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         _dataSource = dataSource;
     }
     
+    public void setDataSourceJndiPath(String dataSourceJndiPath) {
+    	_dataSourceJndiPath = dataSourceJndiPath;
+    }
     //
     // Lifecycle Methods
     //
@@ -232,7 +237,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             	// by this time, if no datasource is set by the setter, use the default one
                 try {
 					InitialContext initialContext = new InitialContext();
-	                _dataSource = (DataSource)initialContext.lookup(DATASOURCE_JNDI_PATH);
+	                _dataSource = (DataSource)initialContext.lookup(_dataSourceJndiPath);
 				} catch (NamingException e) {
 		            throw new IllegalStateException("Couldn't find datasource through jndi");
 				}
