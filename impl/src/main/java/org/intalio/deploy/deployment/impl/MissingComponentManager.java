@@ -65,11 +65,11 @@ class MissingComponentManager implements ComponentManager {
     }
 
     public void undeployed(ComponentId cid, File path, List<String> deployedResources) {
-        LOG.warn(_("Missing component manager: undeploy {0}", cid));
+        LOG.warn(_("Missing component manager: undeployed {0}", cid));
     }
 
 	public void activate(ComponentId cid, File path, List<String> deployedResources) {
-        LOG.warn(_("Missing component manager: undeploy {0}", cid));
+        LOG.warn(_("Missing component manager: activate {0}", cid));
 	}
 
 	public ComponentManagerResult deploy(ComponentId name, File path, boolean activate) {
@@ -78,14 +78,14 @@ class MissingComponentManager implements ComponentManager {
 	}
 
 	public void retire(ComponentId cid, File path, List<String> deployedResources) {
-        LOG.warn(_("Missing component manager: undeploy {0}", cid));
+        LOG.warn(_("Missing component manager: retire {0}", cid));
 	}
 
 	public void activated(ComponentId cid, File path, List<String> deployedResources) {
-        LOG.warn(_("Missing component manager: undeploy {0}", cid));
+        LOG.warn(_("Missing component manager: activated {0}", cid));
 	}
 
 	public void retired(ComponentId cid, File path, List<String> deployedResources) {
-        LOG.warn(_("Missing component manager: undeploy {0}", cid));
+        LOG.warn(_("Missing component manager: retired {0}", cid));
 	}
 }
