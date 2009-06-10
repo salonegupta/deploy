@@ -485,8 +485,10 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
                 setMarkedAsDeployed(aid, results.isSuccessful());
                 clearMarkedAsInvalid(aid);
-            } finally {
-                _persist.rollbackTransaction("Unknown reason"); 
+            } catch (RuntimeException e) {
+                String msg = _("Unexpected exception {0}: {1}", e.getClass(), e.getMessage());
+                results.add(null, null, error(msg));
+                _persist.rollbackTransaction(msg);
             }
         }
         
