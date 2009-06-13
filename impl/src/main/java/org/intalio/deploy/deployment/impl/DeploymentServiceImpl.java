@@ -418,6 +418,20 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             try {
                 _persist.startTransaction();
 
+                /* The protocol has been changed after discussion with Alex.
+                 * We now de-activate active versions when the the 'activate' is set to true.
+                 * To have multiple active version for a new component manager,
+                 * 1. deploy a version with the activate set to false
+                 * 2. call active() on the new version
+                 */
+                try { 
+	                if( activate ) {
+	                    retire(aid);
+	                }
+                } catch(Exception e) {
+                	LOG.warn("Exeption during retiring old versions to activate the new one:", e);
+                }
+
                 try {
                     File[] files = assemblyDir.listFiles();
 
@@ -877,33 +891,44 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         cluster.sendMessage(new ActivatedMessage(assembly));
         
         return results.finalResult(); 
-	}
+    }
 
-	public DeploymentResult retire(AssemblyId assemblyId) {
-		/*
-		 * Retires all versions for the assembly name; the given version number is ignored
-		 */
-		TemporaryResult results = new TemporaryResult(assemblyId);
+    /**
+     * Retires all revisions for the assembly. The version number inside the
+     * AssemblyId is ignored.
+     */
+    public DeploymentResult retire(AssemblyId assemblyId) {
+        TemporaryResult results = new TemporaryResult(assemblyId);
 
-		DeployedAssembly assembly = loadAssemblyState(assemblyId);
-        for (DeployedComponent dc : assembly.getDeployedComponents()) {
-            ComponentManager manager = getComponentManager(dc.getComponentManagerName());
-            try {
-                LOG.debug(_("Retire component {0}", dc));
-                manager.retire(dc.getComponentId(), new File(dc.getComponentDir()), dc.getDeployedResources());
-            } catch (Exception except) {
-                String msg = _("Error while retiring component {0}: {1}", dc.getComponentId(), except);
-                results.add(dc.getComponentId(), dc.getComponentManagerName(), new DeploymentMessage(Level.ERROR, msg));
-                LOG.error(msg, except);
+        Collection<DeployedAssembly> assembliesToRetire = new ArrayList<DeployedAssembly>();
+        Map<AssemblyId, DeployedAssembly> assembliesById = _persist.load();
+        for( AssemblyId id : assembliesById.keySet() ) {
+            if( id.getAssemblyName().equals(assemblyId.getAssemblyName()) 
+                    && assembliesById.get(id).isActive() ) {
+                DeployedAssembly assembly = loadAssemblyState(id);
+                assembliesToRetire.add(assembly);
+                for (DeployedComponent dc : assembly.getDeployedComponents()) {
+                    ComponentManager manager = getComponentManager(dc.getComponentManagerName());
+                    try {
+                        LOG.debug(_("Retire component {0}", dc));
+                        manager.retire(dc.getComponentId(), new File(dc.getComponentDir()), dc.getDeployedResources());
+                    } catch (Exception except) {
+                        String msg = _("Error while retiring component {0}: {1}", dc.getComponentId(), except);
+                        results.add(dc.getComponentId(), dc.getComponentManagerName(), new DeploymentMessage(Level.ERROR, msg));
+                        LOG.error(msg, except);
+                    }
+                }
             }
         }
         _persist.retire(assemblyId.getAssemblyName());
-        cluster.sendMessage(new RetiredMessage(assembly));
+        for( DeployedAssembly assembly : assembliesToRetire ) {
+            cluster.sendMessage(new RetiredMessage(assembly));
+        }
 
         return results.finalResult(); 
-	}
+    }
 
-	private void checkRequiredComponentManagersAvailable() {
+    private void checkRequiredComponentManagersAvailable() {
         boolean available = true;
         StringBuffer missing = new StringBuffer();
         for (String cm : _requiredComponentManagers) {
@@ -930,7 +955,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     }
 
     public void warmUpCluster() throws Exception {
-    	cluster.warmUp();
+        cluster.warmUp();
     }
     
     private void internalStart() {
@@ -944,10 +969,10 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             Collection<DeployedAssembly> assemblies = getDeployedAssemblies();
             // let the runtime ComponentManagers be aware of the deployed components
             for( DeployedAssembly assembly : assemblies ) {
-            	for( DeployedComponent component : assembly.getDeployedComponents() ) {
-            		ComponentManager manager = getComponentManager(component.getComponentManagerName());
-            		manager.deployed(component.getComponentId(), new File(component.getComponentDir()), component.getDeployedResources(), assembly.isActive());
-            	}
+                for( DeployedComponent component : assembly.getDeployedComponents() ) {
+                    ComponentManager manager = getComponentManager(component.getComponentManagerName());
+                    manager.deployed(component.getComponentId(), new File(component.getComponentDir()), component.getDeployedResources(), assembly.isActive());
+                }
             }
             
             if (initializeAndStart(assemblies)) {
@@ -1168,14 +1193,14 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
     private void assertStarted() {
         synchronized (LIFECYCLE_LOCK) {
-        	int secs = 10;
+            int secs = 10;
             while (secs-- > 0 && _serviceState != ServiceState.STARTED) {
                 try {
-                	LOG.info("Deployment has been requested. However, the service is still starting up(retrying in 1 sec).");
-					LIFECYCLE_LOCK.wait(1000);
-				} catch (InterruptedException e) {
-					throw new RuntimeException(e);
-				}
+                    LOG.info("Deployment has been requested. However, the service is still starting up(retrying in 1 sec).");
+                    LIFECYCLE_LOCK.wait(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
             if (_serviceState != ServiceState.STARTED) {
                 throw new IllegalStateException(_("Service not started.  Current state is {0}", _serviceState));

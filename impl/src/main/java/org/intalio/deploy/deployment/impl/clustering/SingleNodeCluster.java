@@ -45,4 +45,20 @@ public class SingleNodeCluster implements Cluster {
 	public List<String> getAllCurrentMembers() {
 		return members;
 	}
+
+	public ClusterListener getListener() {
+		return null;
+	}
+
+	public void setListener(ClusterListener listener) {
+		// do nothing
+	}
+
+	public String getGroupName() {
+		return null;
+	}
+
+	public void setGroupName(String groupName) {
+		// do nothing
+	}
 }

@@ -27,6 +27,8 @@ import org.intalio.deploy.deployment.AssemblyId;
 import org.intalio.deploy.deployment.DeployedAssembly;
 import org.intalio.deploy.deployment.DeploymentResult;
 import org.intalio.deploy.deployment.impl.DeploymentServiceImpl;
+import org.intalio.deploy.deployment.impl.clustering.Cluster;
+import org.intalio.deploy.deployment.impl.clustering.NullClusterListener;
 import org.intalio.deploy.deployment.utils.DeploymentServiceLookup;
 import org.intalio.deploy.registry.Registry;
 import org.intalio.deploy.registry.RegistryFactory;
@@ -85,6 +87,12 @@ public class DeployWS {
                     propsCfg.setSearchSystemEnvironment(true);
                     propsCfg.postProcessBeanFactory(factory);
                     _deployService = (DeploymentServiceImpl) factory.getBean("deploymentService");
+                    
+                    Cluster clusterConfigFromItsOwnConfigFile = getClusterConfig(_deployService);
+                    if( clusterConfigFromItsOwnConfigFile != null ) {
+                    	_deployService.setCluster(clusterConfigFromItsOwnConfigFile);
+                    }
+                    
                     _deployService.init();
                     _deployService.start();
                     _initialized = true;
@@ -98,6 +106,31 @@ public class DeployWS {
         }
     }
 
+    private Cluster getClusterConfig(DeploymentServiceImpl deployService) {
+    	Cluster cluster = null;
+    	
+    	try {
+	        FileSystemResource config = new FileSystemResource(new File(_configDir, "cluster-config.xml"));
+	        XmlBeanFactory factory = new XmlBeanFactory(config);
+	
+	        PropertyPlaceholderConfigurer propsCfg = new PropertyPlaceholderConfigurer();
+	        propsCfg.setSearchSystemEnvironment(true);
+	        propsCfg.postProcessBeanFactory(factory);
+	        cluster = (Cluster) factory.getBean("clusterConfig");
+	        if( cluster != null ) {
+	        	if( LOG.isInfoEnabled() ) LOG.info("Found clustering configuration at:" + config.getPath() + ".");
+	        	
+	        	if( cluster.getListener() instanceof NullClusterListener ) {
+	        		cluster.setListener(deployService);
+	        	}
+	        }
+    	} catch( Exception e ) {
+    		// don't sweat
+    	}
+    	
+    	return cluster;
+    }
+    
     protected void bindRegistry() {
         try {
             DeploymentServiceLookup lookup = new DeploymentServiceLookup();
