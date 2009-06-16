@@ -110,6 +110,7 @@ public class QuorumBasedCluster implements CallBack, Cluster {
             synchronized( clusterSize ) {
 	            while( !isClusterReady() ) {
 	            	clusterSize.wait(1000);
+	            	warmUp();
 	            }
             }
         } catch (Exception e) {
@@ -123,6 +124,7 @@ public class QuorumBasedCluster implements CallBack, Cluster {
     
     public void warmUp() {
     	try {
+    		LOG.info("Warming up cluster...");
     		gms.getGroupHandle().sendMessage("Component", ("WARM_UP from " + serverId).getBytes());
     	} catch( Exception e ) {
     		throw new RuntimeException(e);
