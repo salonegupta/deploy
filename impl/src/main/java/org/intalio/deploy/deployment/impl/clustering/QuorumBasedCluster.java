@@ -11,7 +11,6 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Properties;
 
-import org.intalio.deploy.deployment.impl.DeploymentServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +29,7 @@ import com.sun.enterprise.ee.cms.impl.client.PlannedShutdownActionFactoryImpl;
 import com.sun.enterprise.ee.cms.impl.common.JoinNotificationSignalImpl;
 
 public class QuorumBasedCluster implements CallBack, Cluster {
-    private static final Logger LOG = LoggerFactory.getLogger(DeploymentServiceImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(QuorumBasedCluster.class);
 
     public static final String DEPLOY_COMPONENT = "DeploymentService";
     
@@ -44,7 +43,7 @@ public class QuorumBasedCluster implements CallBack, Cluster {
 
     private Integer clusterSize = 1;
     
-	private ClusterListener listener;
+	private ClusterListener listener = new NullClusterListener();
     
     public String getServerId() {
 		return serverId;
@@ -75,6 +74,10 @@ public class QuorumBasedCluster implements CallBack, Cluster {
 	}
 
 	public void setListener(ClusterListener listener) {
+		if( listener == null ) {
+			listener = new NullClusterListener(); 
+		}
+		
 		this.listener = listener;
 	}
 
@@ -139,7 +142,7 @@ public class QuorumBasedCluster implements CallBack, Cluster {
                     Object obj = deserialize(((MessageSignal) signal).getMessage());
                     if (obj instanceof DeployedMessage) {
                         DeployedMessage msg = (DeployedMessage) obj;
-                        listener.onDeployed(msg.assembly, msg.activate);
+                    	listener.onDeployed(msg.assembly, msg.activate);
                     } else if (obj instanceof UndeployedMessage) {
                         UndeployedMessage msg = (UndeployedMessage) obj;
                         listener.onUndeployed(msg.assembly);

@@ -52,4 +52,32 @@ public interface Cluster {
 	 * @return a list of strings each of which represents a member node's identifier
 	 */
 	List<String> getAllCurrentMembers();
+
+	/**
+	 * Returns the cluster listener that's listening on this cluster.
+	 * 
+	 * @return the cluster listener
+	 */
+	public ClusterListener getListener();
+
+	/**
+	 * Sets the cluster listener.
+	 * 
+	 * @param listener the cluster listener
+	 */
+	public void setListener(ClusterListener listener);
+
+	/**
+	 * Returns the group name of the cluster.
+	 * 
+	 * @return the group name
+	 */
+	public String getGroupName();
+
+	/**
+	 * Sets the group name of the cluster.
+	 * 
+	 * @param groupName thr group name
+	 */
+	public void setGroupName(String groupName);
 }
