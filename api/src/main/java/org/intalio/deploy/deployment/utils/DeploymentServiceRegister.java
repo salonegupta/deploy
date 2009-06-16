@@ -64,7 +64,7 @@ public class DeploymentServiceRegister {
                 callback.available(_manager);
                 _timer.cancel();
                 LOG.debug("Registered ComponentManager: "+getName());
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 if (_debug) 
                     LOG.debug("DeploymentServiceCallback not yet available (ComponentManager="+getName()+"): " + e.toString(), e);
                 return;
