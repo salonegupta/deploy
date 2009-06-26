@@ -446,15 +446,28 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                             // ignore directories without extension (no mapping)
                             continue;
                         }
+                        
+                        LOG.debug("Deploying " + f.getCanonicalPath());
                         String componentType = f.getName().substring(dot+1);
                         String componentName = f.getName().substring(0, dot);
                         ComponentId component = new ComponentId(aid, componentName);
 
                         ComponentManager manager = getComponentManager(componentType);
+                        LOG.debug("ComponentManager resolved: " + manager);
                         try {
-                        	ComponentManagerResult result = manager.deploy(component, f, activate);
+                            ComponentManagerResult result = manager.deploy(component, f, activate);
                             results.addAll(component, componentType, result.getMessages());
-                            deployed.add(new DeployedComponent(component, f.getAbsolutePath(), componentType, result.getDeployedResources()));
+                            // Sometimes, the component manager returns the same resources multiple times in the list
+                            // let's take out the extra resource strings, yet keep the order
+                            List<String> deployedResources = new ArrayList<String>();
+                            for( String resource : result.getDeployedResources() ) {
+                                if( !deployedResources.contains(resource) ) {
+                                    deployedResources.add(resource);
+                                } else {
+                                    LOG.debug("Duplicate resource string found from the Component Manager deployment result, skipping: " + resource);
+                                }
+                            }
+                            deployed.add(new DeployedComponent(component, f.getAbsolutePath(), componentType, deployedResources));
                         } catch (Exception except) {
                             String msg = _("Exception while deploying component {0}: {1}", componentName, except.getLocalizedMessage());
                             results.add(component, componentType, error(msg));
@@ -513,8 +526,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
      * Undeploy an assembly by name
      */
     public DeploymentResult undeployAssembly(AssemblyId aid) {
-    	if( LOG.isDebugEnabled() ) LOG.debug("DEPLOYMENT.undeployAssembly(" + aid + ")");
-    	
+        if( LOG.isDebugEnabled() ) LOG.debug("DEPLOYMENT.undeployAssembly(" + aid + ")");
+        
         assertStarted();
         
         if (!exist(aid))
@@ -523,7 +536,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         DeployedAssembly assembly = loadAssemblyState(aid);
         DeployedAssembly assemblyFromDatabase = _persist.load().get(aid);
         if( assemblyFromDatabase != null ) {
-        	assembly = assemblyFromDatabase;
+            assembly = assemblyFromDatabase;
         }
         
         stopAndDispose(aid);
@@ -548,10 +561,10 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
      * start newly deployed assemblies.
      */
     public void scan() {
-    	if( !cluster.isCoordinator() ) {
-    		return;
-    	}
-    	
+        if( !cluster.isCoordinator() ) {
+            return;
+        }
+        
         LOG.debug(_("Scanning deployment directory {0}", _deployDir));
         LOG.debug(_("Component managers: {0}", _componentManagers));
         synchronized (DEPLOY_LOCK) {
@@ -596,11 +609,11 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             stopAndDispose(undeploy);
 
             for (DeployedAssembly assembly : undeploy) {
-            	DeployedAssembly assemblyFromDatabase = deployedMap.get(assembly.getAssemblyId());
-            	if( assemblyFromDatabase != null ) {
-            		assembly = assemblyFromDatabase;
-            	}
-            	
+                DeployedAssembly assemblyFromDatabase = deployedMap.get(assembly.getAssemblyId());
+                if( assemblyFromDatabase != null ) {
+                    assembly = assemblyFromDatabase;
+                }
+                
                 DeploymentResult result = undeployAssembly(assembly);
                 if (result.isSuccessful())
                     LOG.info(_("Undeployed assembly: {0}", assembly.getAssemblyId()));
@@ -616,7 +629,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                     AssemblyId aid = parseAssemblyId(files[i].getName());
                     if (!isMarkedAsDeployed(aid) && !isMarkedAsInvalid(aid)) {
                         try {
-                        	// auto-detected assemblies are always activated after deployment
+                            // auto-detected assemblies are always activated after deployment
                             DeploymentResult result = deployExplodedAssembly(files[i], true);
                             if (result.isSuccessful()) {
                                 LOG.info(_("Deployed Assembly: {0}", result));
@@ -630,8 +643,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                             setMarkedAsInvalid(aid, except.toString());
                         }
                     } else if(isMarkedAsDeployed(aid) && !deployedMap.containsKey(aid)) {
-                    	if(LOG.isWarnEnabled()) LOG.warn(_("Inconsistent states found between the file system and the deployment service database!!"));
-                    	if(LOG.isWarnEnabled()) LOG.warn(_("A valid assembly for " + aid + " exists on the file system but missing in the database; You can re-deploy the assembly by removing the .deployed files for the assemblies."));
+                        if(LOG.isWarnEnabled()) LOG.warn(_("Inconsistent states found between the file system and the deployment service database!!"));
+                        if(LOG.isWarnEnabled()) LOG.warn(_("A valid assembly for " + aid + " exists on the file system but missing in the database; You can re-deploy the assembly by removing the .deployed files for the assemblies."));
                     }
                 }
             }
@@ -732,7 +745,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     public void onUndeployed(DeployedAssembly assembly) {
         for (DeployedComponent dc : assembly.getDeployedComponents()) {
             try {
-            	if(LOG.isDebugEnabled()) LOG.debug(_("Undeployed component {0}", dc));
+                if(LOG.isDebugEnabled()) LOG.debug(_("Undeployed component {0}", dc));
                 ComponentManager manager = getComponentManager(dc.getComponentManagerName());
                 manager.undeployed(dc.getComponentId(), new File(dc.getComponentDir()), dc.getDeployedResources());
             } catch (Exception except) {
@@ -776,7 +789,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         // patch with the one from DB
         DeployedAssembly assemblyFromDatabase = _persist.load().get(aid);
         if( assemblyFromDatabase != null ) {
-        	assembly = assemblyFromDatabase;
+            assembly = assemblyFromDatabase;
         }
         List<DeployedAssembly> assemblies = new ArrayList<DeployedAssembly>();
         assemblies.add(assembly);
@@ -872,9 +885,9 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         }
     }
 
-	public DeploymentResult activate(AssemblyId assemblyId) {
-		TemporaryResult results = new TemporaryResult(assemblyId);
-		
+    public DeploymentResult activate(AssemblyId assemblyId) {
+        TemporaryResult results = new TemporaryResult(assemblyId);
+        
         DeployedAssembly assembly = loadAssemblyState(assemblyId);
         for (DeployedComponent dc : assembly.getDeployedComponents()) {
             ComponentManager manager = getComponentManager(dc.getComponentManagerName());
