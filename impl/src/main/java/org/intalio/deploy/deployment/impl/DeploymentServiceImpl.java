@@ -121,14 +121,14 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     private final StartTask _startTask = new StartTask();
 
     private final TimerTask clusterizeTask = new TimerTask() {
-    	public void run() {
-    		try {
-    			cluster.start();
-    			onClustered();
-    		} catch( Exception e ) {
-    			e.printStackTrace();
-    		}
-    	}
+        public void run() {
+            try {
+                cluster.start();
+                onClustered();
+            } catch( Exception e ) {
+                e.printStackTrace();
+            }
+        }
     };
 
     private final ScanTask _scanTask = new ScanTask();
@@ -139,7 +139,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     
     private boolean replaceExistingAssemblies = false;
 
-	// the Null-Object pattern
+    // the Null-Object pattern
     private Cluster cluster = new SingleNodeCluster();
     
     //
@@ -154,14 +154,14 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     //
 
     public Cluster getCluster() {
-		return cluster;
-	}
+        return cluster;
+    }
 
-	public void setCluster(Cluster cluster) {
-		this.cluster = cluster;
-	}
+    public void setCluster(Cluster cluster) {
+        this.cluster = cluster;
+    }
 
-	public String getDeployDirectory() {
+    public String getDeployDirectory() {
         return _deployDir;
     }
 
@@ -178,8 +178,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     }
 
     public void setReplaceExistingAssemblies(boolean replaceExistingAssemblies) {
-		this.replaceExistingAssemblies = replaceExistingAssemblies;
-	}
+        this.replaceExistingAssemblies = replaceExistingAssemblies;
+    }
 
     public void addComponentTypeMapping(String componentType, String componentManager) {
         _componentTypes.put(componentType, componentManager);
@@ -218,7 +218,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     }
     
     public void setDataSourceJndiPath(String dataSourceJndiPath) {
-    	_dataSourceJndiPath = dataSourceJndiPath;
+        _dataSourceJndiPath = dataSourceJndiPath;
     }
     //
     // Lifecycle Methods
@@ -234,13 +234,13 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             }
             ensureDeploymentDirExists();
             if (_dataSource == null) {
-            	// by this time, if no datasource is set by the setter, use the default one
+                // by this time, if no datasource is set by the setter, use the default one
                 try {
-					InitialContext initialContext = new InitialContext();
-	                _dataSource = (DataSource)initialContext.lookup(_dataSourceJndiPath);
-				} catch (NamingException e) {
-		            throw new IllegalStateException("Couldn't find datasource through jndi");
-				}
+                    InitialContext initialContext = new InitialContext();
+                    _dataSource = (DataSource)initialContext.lookup(_dataSourceJndiPath);
+                } catch (NamingException e) {
+                    throw new IllegalStateException("Couldn't find datasource through jndi");
+                }
             }
             
             _persist = new Persistence(new File(_deployDir), _dataSource);
@@ -308,14 +308,14 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     // Operations
     //
     public DeploymentResult deployAssembly(String assemblyName, InputStream zip) {
-    	return deployAssembly(assemblyName, zip, true);
+        return deployAssembly(assemblyName, zip, true);
     }
 
     /**
      * Deploy a packaged (zipped) assembly
      */
     public DeploymentResult deployAssembly(String assemblyName, InputStream zip, boolean activate) {
-    	if( LOG.isDebugEnabled() ) LOG.debug("DEPLOYMENT.deployAssembly(" + assemblyName + ", replaceExistingAssemblies=" + replaceExistingAssemblies + ", activate=" + activate + ")");
+        if( LOG.isDebugEnabled() ) LOG.debug("DEPLOYMENT.deployAssembly(" + assemblyName + ", replaceExistingAssemblies=" + replaceExistingAssemblies + ", activate=" + activate + ")");
 
         assertStarted();
 
@@ -325,27 +325,27 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             return convertToResult(except, newAssemblyId(assemblyName));
         }
 
-        AssemblyId aid = versionAssemblyId(assemblyName);
-        if (replaceExistingAssemblies) {
-            Collection<DeployedAssembly> deployed = getDeployedAssemblies();
-            for (DeployedAssembly da : deployed) {
-                if (da.getAssemblyId().getAssemblyName().equals(aid.getAssemblyName())) {
-                    try {
-                        stopAndDispose(da.getAssemblyId());
-                        DeploymentResult result = undeployAssembly(da);
-                        Utils.deleteRecursively(new File(da.getAssemblyDir()));
-                        if (!result.isSuccessful()) {
-                            return result;
+        synchronized (DEPLOY_LOCK) {
+            AssemblyId aid = versionAssemblyId(assemblyName);
+            if (replaceExistingAssemblies) {
+                Collection<DeployedAssembly> deployed = getDeployedAssemblies();
+                for (DeployedAssembly da : deployed) {
+                    if (da.getAssemblyId().getAssemblyName().equals(aid.getAssemblyName())) {
+                        try {
+                            stopAndDispose(da.getAssemblyId());
+                            DeploymentResult result = undeployAssembly(da);
+                            Utils.deleteRecursively(new File(da.getAssemblyDir()));
+                            if (!result.isSuccessful()) {
+                                return result;
+                            }
+                        } catch (Exception except) {
+                            LOG.error(_("Error while undeploying assembly {0}", da.getAssemblyId()), except);
+                            return convertToResult(except, aid);
                         }
-                    } catch (Exception except) {
-                        LOG.error(_("Error while undeploying assembly {0}", da.getAssemblyId()), except);
-                        return convertToResult(except, aid);
                     }
                 }
             }
-        }
 
-        synchronized (DEPLOY_LOCK) {
             try {
                 setMarkedAsInvalid(aid, _("Deploying {0} ...", aid));
 
@@ -397,24 +397,24 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             aid = versionAssemblyId(assemblyDir.getName());
         }
 
-        // mark as invalid while we deploy to avoid concurrency issues with scanner
-        setMarkedAsInvalid(aid, _("Deploying {0} ...", aid));
-
-        // if assemblyDir is outside deployDir, copy files into deployDir
-        if (!local) {
-            File d = getAssemblyDir(aid);
-            try {
-                Utils.copyRecursively(assemblyDir, d);
-            } catch (IOException except) {
-                Utils.deleteRecursively(d);
-                throw new RuntimeException(except);
-            }
-        }
-
         TemporaryResult results = new TemporaryResult(aid);
-        List<DeployedComponent> deployed = new ArrayList<DeployedComponent>();
-
         synchronized (DEPLOY_LOCK) {
+            // mark as invalid while we deploy to avoid concurrency issues with scanner
+            setMarkedAsInvalid(aid, _("Deploying {0} ...", aid));
+    
+            // if assemblyDir is outside deployDir, copy files into deployDir
+            if (!local) {
+                File d = getAssemblyDir(aid);
+                try {
+                    Utils.copyRecursively(assemblyDir, d);
+                } catch (IOException except) {
+                    Utils.deleteRecursively(d);
+                    throw new RuntimeException(except);
+                }
+            }
+    
+            List<DeployedComponent> deployed = new ArrayList<DeployedComponent>();
+
             try {
                 _persist.startTransaction();
 
@@ -425,11 +425,11 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                  * 2. call active() on the new version
                  */
                 try { 
-	                if( activate ) {
-	                    retire(aid);
-	                }
+                    if( activate ) {
+                        retire(aid);
+                    }
                 } catch(Exception e) {
-                	LOG.warn("Exeption during retiring old versions to activate the new one:", e);
+                    LOG.warn("Exeption during retiring old versions to activate the new one:", e);
                 }
 
                 try {
@@ -545,13 +545,15 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         }
         onUndeployed(assembly);
         
-        try {
-            return undeployAssembly(assembly);
-        } finally {
+        synchronized(DEPLOY_LOCK) {
             try {
-                Utils.deleteRecursively(new File(assembly.getAssemblyDir()));
-            } catch (Exception e) {
-                LOG.warn(_("Exception while undeploying assembly {0}: {1}", assembly.getAssemblyId(), e.toString()));
+                return undeployAssembly(assembly);
+            } finally {
+                try {
+                    Utils.deleteRecursively(new File(assembly.getAssemblyDir()));
+                } catch (Exception e) {
+                    LOG.warn(_("Exception while undeploying assembly {0}: {1}", assembly.getAssemblyId(), e.toString()));
+                }
             }
         }
     }
