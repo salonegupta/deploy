@@ -90,7 +90,7 @@ public class DeployWS {
                     
                     Cluster clusterConfigFromItsOwnConfigFile = getClusterConfig(_deployService);
                     if( clusterConfigFromItsOwnConfigFile != null ) {
-                    	_deployService.setCluster(clusterConfigFromItsOwnConfigFile);
+                        _deployService.setCluster(clusterConfigFromItsOwnConfigFile);
                     }
                     
                     _deployService.init();
@@ -107,28 +107,28 @@ public class DeployWS {
     }
 
     private Cluster getClusterConfig(DeploymentServiceImpl deployService) {
-    	Cluster cluster = null;
-    	
-    	try {
-	        FileSystemResource config = new FileSystemResource(new File(_configDir, "cluster-config.xml"));
-	        XmlBeanFactory factory = new XmlBeanFactory(config);
-	
-	        PropertyPlaceholderConfigurer propsCfg = new PropertyPlaceholderConfigurer();
-	        propsCfg.setSearchSystemEnvironment(true);
-	        propsCfg.postProcessBeanFactory(factory);
-	        cluster = (Cluster) factory.getBean("clusterConfig");
-	        if( cluster != null ) {
-	        	if( LOG.isInfoEnabled() ) LOG.info("Found clustering configuration at:" + config.getPath() + ".");
-	        	
-	        	if( cluster.getListener() instanceof NullClusterListener ) {
-	        		cluster.setListener(deployService);
-	        	}
-	        }
-    	} catch( Exception e ) {
-    		// don't sweat
-    	}
-    	
-    	return cluster;
+        Cluster cluster = null;
+        
+        try {
+            FileSystemResource config = new FileSystemResource(new File(_configDir, "cluster-config.xml"));
+            XmlBeanFactory factory = new XmlBeanFactory(config);
+    
+            PropertyPlaceholderConfigurer propsCfg = new PropertyPlaceholderConfigurer();
+            propsCfg.setSearchSystemEnvironment(true);
+            propsCfg.postProcessBeanFactory(factory);
+            cluster = (Cluster) factory.getBean("clusterConfig");
+            if( cluster != null ) {
+                if( LOG.isInfoEnabled() ) LOG.info("Found clustering configuration at:" + config.getPath() + ".");
+                
+                if( cluster.getListener() instanceof NullClusterListener ) {
+                    cluster.setListener(deployService);
+                }
+            }
+        } catch( Exception e ) {
+            // don't sweat
+        }
+        
+        return cluster;
     }
     
     protected void bindRegistry() {

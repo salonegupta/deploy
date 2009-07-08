@@ -68,6 +68,6 @@ define "deploy" do
   desc "Deployment Web-Service"
   define "ws-service" do
 #    compile.with projects("api", "ws-common"), AXIOM, AXIS2, SLF4J, SPRING[:core], STAX_API
-    package(:aar).with :libs => [ projects("api", "impl", "ws-common"), SLF4J, SPRING[:core], APACHE_COMMONS[:dbcp], APACHE_COMMONS[:pool], APACHE_DERBY, APACHE_DERBY_NET ]
+    package(:aar).with :libs => [ projects("api", "impl", "ws-common"), SLF4J, SPRING[:core], SHOAL, APACHE_COMMONS[:dbcp], APACHE_COMMONS[:pool], APACHE_DERBY, APACHE_DERBY_NET ]
   end
 end

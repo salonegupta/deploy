@@ -43,57 +43,63 @@ public class QuorumBasedCluster implements CallBack, Cluster {
 
     private Integer clusterSize = 1;
     
-	private ClusterListener listener = new NullClusterListener();
+    private ClusterListener listener = new NullClusterListener();
     
     public String getServerId() {
-		return serverId;
-	}
+        return serverId;
+    }
 
-	public void setServerId(String serverId) {
-		this.serverId = serverId;
-	}
+    public void setServerId(String serverId) {
+        this.serverId = serverId;
+    }
 
-	public String getGroupName() {
-		return groupName;
-	}
+    public String getGroupName() {
+        return groupName;
+    }
 
-	public void setGroupName(String groupName) {
-		this.groupName = groupName;
-	}
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
+    }
 
-	public Properties getClusterProperties() {
-		return clusterProperties;
-	}
+    public Properties getClusterProperties() {
+        return clusterProperties;
+    }
 
-	public void setClusterProperties(Properties clusterProperties) {
-		this.clusterProperties = clusterProperties;
-	}
+    public void setClusterProperties(Properties clusterProperties) {
+        this.clusterProperties = clusterProperties;
+    }
 
-	public ClusterListener getListener() {
-		return listener;
-	}
+    public ClusterListener getListener() {
+        return listener;
+    }
 
-	public void setListener(ClusterListener listener) {
-		if( listener == null ) {
-			listener = new NullClusterListener(); 
-		}
-		
-		this.listener = listener;
-	}
+    public void setListener(ClusterListener listener) {
+        if( listener == null ) {
+            listener = new NullClusterListener(); 
+        }
+        
+        this.listener = listener;
+    }
 
-	public boolean isCoordinator() {
-		return isClusterReady() &&  serverId.equals(gms.getGroupHandle().getGroupLeader());
-	}
+    public boolean isCoordinator() {
+        if( LOG.isDebugEnabled() ) {
+            LOG.debug( "Members in cluster: " + gms.getGroupHandle().getAllCurrentMembers());
+            LOG.debug("My server id: " + serverId);
+            LOG.debug(_("Coordinator: {0}", gms.getGroupHandle().getGroupLeader()));
+        }
+
+        return isClusterReady() &&  serverId.equals(gms.getGroupHandle().getGroupLeader());
+    }
 
     public int getClusterSize() {
-		return clusterSize;
-	}
+        return clusterSize;
+    }
 
-	public void setClusterSize(int clusterSize) {
-		this.clusterSize = clusterSize;
-	}
+    public void setClusterSize(int clusterSize) {
+        this.clusterSize = clusterSize;
+    }
 
-	public void start() {
+    public void start() {
         try {
             LOG.info(_("Starting cluster lifecycle manager: serverId={0} groupName={1}", serverId, groupName));
 
@@ -108,10 +114,10 @@ public class QuorumBasedCluster implements CallBack, Cluster {
             LOG.info(_("Coordinator: {0}", isCoordinator()));
             System.out.println(">>> gms members : " + gms.getGroupHandle().getAllCurrentMembers() + " for " + gms.getGroupHandle().getCurrentCoreMembers());
             synchronized( clusterSize ) {
-	            while( !isClusterReady() ) {
-	            	clusterSize.wait(1000);
-	            	warmUp();
-	            }
+                while( !isClusterReady() ) {
+                    clusterSize.wait(1000);
+                    warmUp();
+                }
             }
         } catch (Exception e) {
             LOG.error("Error while starting cluster lifecycle manager", e);
@@ -123,12 +129,12 @@ public class QuorumBasedCluster implements CallBack, Cluster {
     }
     
     public void warmUp() {
-    	try {
-    		LOG.info("Warming up cluster...");
-    		gms.getGroupHandle().sendMessage("Component", ("WARM_UP from " + serverId).getBytes());
-    	} catch( Exception e ) {
-    		throw new RuntimeException(e);
-    	}
+        try {
+            LOG.info("Warming up cluster...");
+            gms.getGroupHandle().sendMessage("Component", ("WARM_UP from " + serverId).getBytes());
+        } catch( Exception e ) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void processNotification(Signal signal) {
@@ -144,7 +150,7 @@ public class QuorumBasedCluster implements CallBack, Cluster {
                     Object obj = deserialize(((MessageSignal) signal).getMessage());
                     if (obj instanceof DeployedMessage) {
                         DeployedMessage msg = (DeployedMessage) obj;
-                    	listener.onDeployed(msg.assembly, msg.activate);
+                        listener.onDeployed(msg.assembly, msg.activate);
                     } else if (obj instanceof UndeployedMessage) {
                         UndeployedMessage msg = (UndeployedMessage) obj;
                         listener.onUndeployed(msg.assembly);
@@ -159,7 +165,7 @@ public class QuorumBasedCluster implements CallBack, Cluster {
                     LOG.info(_("Coordinator: {0}", isCoordinator()));
                     
                     synchronized(clusterSize) {
-                    	clusterSize.notify();
+                        clusterSize.notify();
                     }
                 } else {
                     LOG.info(_("Notification received from {0}: {1}", signal.getMemberToken(), signal.toString()));
@@ -188,9 +194,9 @@ public class QuorumBasedCluster implements CallBack, Cluster {
         }
     }
     
-	public List<String> getAllCurrentMembers() {
-		return gms.getGroupHandle().getAllCurrentMembers();
-	}
+    public List<String> getAllCurrentMembers() {
+        return gms.getGroupHandle().getAllCurrentMembers();
+    }
 
     private byte[] serialize(Serializable obj) throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream() ;
@@ -208,6 +214,6 @@ public class QuorumBasedCluster implements CallBack, Cluster {
     }
 
     private boolean isClusterReady() {
-    	return gms.getGroupHandle().getAllCurrentMembers().size() > clusterSize / 2;
+        return gms.getGroupHandle().getAllCurrentMembers().size() > clusterSize / 2;
     }
 }
