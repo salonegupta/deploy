@@ -321,8 +321,16 @@ public class Persistence {
 
     private Connection getConnection() throws SQLException {
         Connection c = _connection.get();
-        if (c != null) return c;
-        else return _ds.getConnection();
+        if (c == null) {
+            try {
+                c = _ds.getConnection();
+                c.setAutoCommit(true);
+            } catch (Exception e) {
+                close(c);
+                throw new SQLException(e.toString());
+            }
+        }
+        return c;
     }
     
     private void ensureTransaction() {
