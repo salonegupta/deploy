@@ -43,6 +43,7 @@ public class DeployClient implements DeploymentService {
     String _username;
     String _password;
     String _token;
+    int _httpTimeout = -1;
 
     /**
      * Create a deployment service client
@@ -81,7 +82,15 @@ public class DeployClient implements DeploymentService {
     public void setToken(String token) {
         _token = token;
     }
-    
+
+    public int getHttpTimeout() {
+        return _httpTimeout;
+    }
+
+    public void setHttpTimeout(int seconds) {
+        _httpTimeout = seconds;
+    }
+
     public DeploymentResult deployAssembly(String assemblyName, InputStream zip) throws RemoteException {
         OMElement request = element(DEPLOY_REQUEST);
         setAuthentication(request);
@@ -122,6 +131,9 @@ public class DeployClient implements DeploymentService {
         EndpointReference targetEPR = new EndpointReference(_endpoint);
         options.setTo(targetEPR);
         options.setAction(action);
+        if (_httpTimeout > 0) {
+            options.setProperty(org.apache.axis2.transport.http.HTTPConstants.SO_TIMEOUT, new Integer(_httpTimeout*1000));
+        }
         OMElement response = serviceClient.sendReceive(request);
         return new OMParser(response);
     }
