@@ -1217,15 +1217,14 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                     throw new RuntimeException(e);
                 }
             }
-            if (_serviceState != ServiceState.STARTED) {
+            
+            if (_serviceState == ServiceState.CLUSTERIZING) {
+                throw new IllegalStateException(_("Not enough number of nodes are discovered in the cluster. Deployment service will be enabled when enough nodes are available."));
+            } else if (_serviceState != ServiceState.STARTED) {
                 throw new IllegalStateException(_("Service not started.  Current state is {0}", _serviceState));
             }
         }
     }
-
-    //
-    // Nested Classes
-    //
 
     /**
      * Recurring scan of the deployment directory every "scanPeriod"
