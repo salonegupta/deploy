@@ -31,6 +31,8 @@ import com.sun.enterprise.ee.cms.impl.common.JoinNotificationSignalImpl;
 public class QuorumBasedCluster implements CallBack, Cluster {
     private static final Logger LOG = LoggerFactory.getLogger(QuorumBasedCluster.class);
 
+    public static final String DEPLOY_SERVER_ID_PROP = "org.intalio.deploy.serverId";
+    
     public static final String DEPLOY_COMPONENT = "DeploymentService";
     
     private GroupManagementService gms;
@@ -101,6 +103,7 @@ public class QuorumBasedCluster implements CallBack, Cluster {
 
     public void start() {
         try {
+            resolveServerId();
             LOG.info(_("Starting cluster lifecycle manager: serverId={0} groupName={1}", serverId, groupName));
 
             gms = (GroupManagementService) GMSFactory.startGMSModule(serverId, groupName, 
@@ -112,7 +115,7 @@ public class QuorumBasedCluster implements CallBack, Cluster {
             gms.addActionFactory(new MessageActionFactoryImpl(this), DEPLOY_COMPONENT);
             gms.join();
             LOG.info(_("Coordinator: {0}", isCoordinator()));
-            System.out.println(">>> gms members : " + gms.getGroupHandle().getAllCurrentMembers() + " for " + gms.getGroupHandle().getCurrentCoreMembers());
+            LOG.info(">>> gms members : " + gms.getGroupHandle().getAllCurrentMembers() + " for " + gms.getGroupHandle().getCurrentCoreMembers());
             synchronized( clusterSize ) {
                 while( !isClusterReady() ) {
                     clusterSize.wait(1000);
@@ -121,6 +124,15 @@ public class QuorumBasedCluster implements CallBack, Cluster {
             }
         } catch (Exception e) {
             LOG.error("Error while starting cluster lifecycle manager", e);
+        }
+    }
+    
+    void resolveServerId() {
+        String serverIdOverrideFromJVM = System.getProperty(DEPLOY_SERVER_ID_PROP);
+        if( serverIdOverrideFromJVM != null && 
+                (serverIdOverrideFromJVM = serverIdOverrideFromJVM.trim()).length() > 0) {
+            serverId = serverIdOverrideFromJVM;
+            LOG.info(_("Server Id has been overridden by the JVM property: {0}", serverIdOverrideFromJVM));
         }
     }
     
