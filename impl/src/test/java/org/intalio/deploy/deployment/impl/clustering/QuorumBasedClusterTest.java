@@ -11,7 +11,7 @@ public class QuorumBasedClusterTest extends TestCase {
         assertEquals(serverId1, cluster1.getServerId());
         
         QuorumBasedCluster cluster2 = new QuorumBasedCluster();
-        assertNotSame(cluster1.getServerId(), cluster2.getServerId());
+        assertFalse(serverId1.equals(cluster2.getServerId()));
         System.setProperty(QuorumBasedCluster.DEPLOY_SERVER_ID_PROP, "junit2");
         cluster2.start();
         assertEquals("junit2", cluster2.getServerId());
