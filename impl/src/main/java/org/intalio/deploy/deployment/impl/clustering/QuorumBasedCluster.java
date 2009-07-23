@@ -10,6 +10,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +38,7 @@ public class QuorumBasedCluster implements CallBack, Cluster {
     
     private GroupManagementService gms;
 
-    private String serverId = "server-"+System.currentTimeMillis();
+    private String serverId = "server-" + UUID.randomUUID();
     
     private String groupName = null;
     
