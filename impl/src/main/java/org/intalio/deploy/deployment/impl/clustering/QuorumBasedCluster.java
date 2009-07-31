@@ -85,13 +85,21 @@ public class QuorumBasedCluster implements CallBack, Cluster {
     }
 
     public boolean isCoordinator() {
+        String groupLeader = null;
+        
+        try {
+            groupLeader = gms.getGroupHandle().getGroupLeader();
+        } catch( NullPointerException e ) {
+            if( LOG.isDebugEnabled() ) LOG.debug("Shoal failed resolving group leader, this is ignorable during startup:", e);
+        }
+        
         if( LOG.isDebugEnabled() ) {
             LOG.debug( "Members in cluster: " + gms.getGroupHandle().getAllCurrentMembers());
             LOG.debug("My server id: " + serverId);
-            LOG.debug(_("Coordinator: {0}", gms.getGroupHandle().getGroupLeader()));
+            LOG.debug(_("Coordinator: {0}", groupLeader));
         }
 
-        return isClusterReady() &&  serverId.equals(gms.getGroupHandle().getGroupLeader());
+        return isClusterReady() &&  serverId.equals(groupLeader);
     }
 
     public int getClusterSize() {
