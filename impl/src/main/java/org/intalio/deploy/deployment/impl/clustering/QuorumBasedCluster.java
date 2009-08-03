@@ -90,7 +90,7 @@ public class QuorumBasedCluster implements CallBack, Cluster {
         try {
             groupLeader = gms.getGroupHandle().getGroupLeader();
         } catch( NullPointerException e ) {
-            if( LOG.isDebugEnabled() ) LOG.debug("Shoal failed resolving group leader, this is ignorable during startup:", e);
+            if( LOG.isDebugEnabled() ) LOG.debug("Shoal failed resolving group leader, this is ignorable during startup.");
         }
         
         if( LOG.isDebugEnabled() ) {

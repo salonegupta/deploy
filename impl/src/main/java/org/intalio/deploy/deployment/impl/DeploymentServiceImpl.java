@@ -616,6 +616,10 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                     assembly = assemblyFromDatabase;
                 }
                 
+                if (cluster.isCoordinator()) {
+                    cluster.sendMessage(new UndeployedMessage(assembly));
+                }
+
                 DeploymentResult result = undeployAssembly(assembly);
                 if (result.isSuccessful())
                     LOG.info(_("Undeployed assembly: {0}", assembly.getAssemblyId()));
