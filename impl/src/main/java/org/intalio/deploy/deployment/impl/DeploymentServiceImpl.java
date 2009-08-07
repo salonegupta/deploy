@@ -42,6 +42,7 @@ import org.intalio.deploy.deployment.DeploymentMessage;
 import org.intalio.deploy.deployment.DeploymentResult;
 import org.intalio.deploy.deployment.DeploymentService;
 import org.intalio.deploy.deployment.DeploymentMessage.Level;
+import org.intalio.deploy.deployment.impl.DeployMBeanServer.NullDeployMBeanServer;
 import org.intalio.deploy.deployment.impl.clustering.ActivatedMessage;
 import org.intalio.deploy.deployment.impl.clustering.Cluster;
 import org.intalio.deploy.deployment.impl.clustering.ClusterListener;
@@ -56,11 +57,14 @@ import org.intalio.deploy.registry.RemoteProxy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jmx.export.annotation.ManagedAttribute;
+import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.util.SystemPropertyUtils;
 
 /**
  * Deployment service
  */
+@ManagedResource(objectName="intalio:module=DeploymentService,service=DeploymentService")
 public class DeploymentServiceImpl implements DeploymentService, Remote, ClusterListener {
     private static final Logger LOG = LoggerFactory.getLogger(DeploymentServiceImpl.class);
 
@@ -111,7 +115,6 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
     private DeploymentServiceCallbackImpl _callback = new DeploymentServiceCallbackImpl();
 
-
     //
     // Services
     //
@@ -141,6 +144,9 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
     // the Null-Object pattern
     private Cluster cluster = new SingleNodeCluster();
+
+    // the Null-Object pattern
+    private DeployMBeanServer _deployMBeanServer = new NullDeployMBeanServer();
     
     //
     // Constructor
@@ -153,6 +159,10 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     // Accessors / Setters
     //
 
+    public void setDeployMBeanServer(DeployMBeanServer deployMBeanServer) {
+        _deployMBeanServer = deployMBeanServer;
+    }
+    
     public Cluster getCluster() {
         return cluster;
     }
@@ -467,7 +477,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                                     LOG.debug("Duplicate resource string found from the Component Manager deployment result, skipping: " + resource);
                                 }
                             }
-                            deployed.add(new DeployedComponent(component, f.getAbsolutePath(), componentType, deployedResources));
+                            DeployedComponent deployedComponent = new DeployedComponent(component, f.getAbsolutePath(), componentType, deployedResources);
+                            deployed.add(deployedComponent);
                         } catch (Exception except) {
                             String msg = _("Exception while deploying component {0}: {1}", componentName, except.getLocalizedMessage());
                             results.add(component, componentType, error(msg));
@@ -705,6 +716,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                     try {
                         ComponentManager manager = getComponentManager(dc.getComponentManagerName());
                         manager.undeploy(dc.getComponentId(), new File(dc.getComponentDir()), dc.getDeployedResources());
+                        
+                        _deployMBeanServer.unregisterComponent(dc.getComponentManagerName(), dc.getComponentId());
                     } catch (Exception except) {
                         String msg = _("Exception while undeploying component {0}: {1}", dc.getComponentId(), except.getLocalizedMessage());
                         result.add(dc, error(msg));
@@ -723,6 +736,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                     setMarkedAsInvalid(aid, result.toString());
                 }
                 setMarkedAsDeployed(aid, false);
+                
+                _deployMBeanServer.unregisterAssembly(aid);
             }
         }
         return result.finalResult();
@@ -735,11 +750,15 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     }
     
     private void deployed(DeployedAssembly assembly, boolean activate) {
+    	_deployMBeanServer.registerAssembly(assembly);
+        
         for (DeployedComponent dc : assembly.getDeployedComponents()) {
             try {
                 if(LOG.isDebugEnabled()) LOG.debug(_("Deployed component {0}", dc));
                 ComponentManager manager = getComponentManager(dc.getComponentManagerName());
                 manager.deployed(dc.getComponentId(), new File(dc.getComponentDir()), dc.getDeployedResources(), activate);
+                
+                _deployMBeanServer.registerComponent(assembly, dc);
             } catch (Exception except) {
                 String msg = _("Error during deployment notification of component {0}: {1}", dc.getComponentId(), except);
                 if(LOG.isErrorEnabled()) LOG.error(msg, except);
@@ -991,7 +1010,10 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 for( DeployedComponent component : assembly.getDeployedComponents() ) {
                     ComponentManager manager = getComponentManager(component.getComponentManagerName());
                     manager.deployed(component.getComponentId(), new File(component.getComponentDir()), component.getDeployedResources(), assembly.isActive());
+
+                    _deployMBeanServer.registerComponent(assembly, component);
                 }
+                _deployMBeanServer.registerAssembly(assembly);
             }
             
             if (initializeAndStart(assemblies)) {
@@ -1272,7 +1294,6 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
      *        http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4071957
      */
     public class DeploymentServiceCallbackImpl implements DeploymentServiceCallback {
-
         public void available(ComponentManager manager) {
             String name = manager.getComponentManagerName();
             // proxy the manager for remote class loaders
@@ -1366,6 +1387,29 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         DeploymentResult finalResult() {
             return new DeploymentResult(_aid, _success, _messages);
         }
+    }
+    
+    @ManagedAttribute
+    public String getClusterType() {
+        return cluster == null ? "NA" : cluster.getClass().getName();
+    }
+    
+    @ManagedAttribute
+    public String getServiceStatus() {
+        return String.valueOf(_serviceState);
+    }
+    
+    @ManagedAttribute
+    public String getDiscoveredComponents() {
+        return String.valueOf(_componentManagers.keySet());
+    }
+    
+    @ManagedAttribute
+    public String getMissingComponents() {
+        Collection<String> missing = new HashSet<String>();
+        missing.addAll(_requiredComponentManagers);
+        missing.removeAll(_componentManagers.keySet());
+        return String.valueOf(missing);
     }
 }
 

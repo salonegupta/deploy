@@ -47,7 +47,7 @@ public class SingleNodeCluster implements Cluster {
         // do nothing
     }
     
-    public List<String> getAllCurrentMembers() {
+    public List<String> getCurrentMembers() {
         return members;
     }
 

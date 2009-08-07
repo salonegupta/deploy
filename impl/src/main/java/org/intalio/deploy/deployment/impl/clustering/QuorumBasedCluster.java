@@ -8,12 +8,17 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jmx.export.annotation.ManagedAttribute;
+import org.springframework.jmx.export.annotation.ManagedOperation;
+import org.springframework.jmx.export.annotation.ManagedResource;
 
 import com.sun.enterprise.ee.cms.core.CallBack;
 import com.sun.enterprise.ee.cms.core.GMSConstants;
@@ -29,6 +34,7 @@ import com.sun.enterprise.ee.cms.impl.client.MessageActionFactoryImpl;
 import com.sun.enterprise.ee.cms.impl.client.PlannedShutdownActionFactoryImpl;
 import com.sun.enterprise.ee.cms.impl.common.JoinNotificationSignalImpl;
 
+@ManagedResource(objectName="intalio:module=DeploymentService,service=Cluster")
 public class QuorumBasedCluster implements CallBack, Cluster {
     private static final Logger LOG = LoggerFactory.getLogger(QuorumBasedCluster.class);
 
@@ -48,6 +54,7 @@ public class QuorumBasedCluster implements CallBack, Cluster {
     
     private ClusterListener listener = new NullClusterListener();
     
+    @ManagedAttribute
     public String getServerId() {
         return serverId;
     }
@@ -56,6 +63,7 @@ public class QuorumBasedCluster implements CallBack, Cluster {
         this.serverId = serverId;
     }
 
+    @ManagedAttribute
     public String getGroupName() {
         return groupName;
     }
@@ -84,6 +92,7 @@ public class QuorumBasedCluster implements CallBack, Cluster {
         this.listener = listener;
     }
 
+    @ManagedAttribute
     public boolean isCoordinator() {
         String groupLeader = null;
         
@@ -102,6 +111,7 @@ public class QuorumBasedCluster implements CallBack, Cluster {
         return isClusterReady() &&  serverId.equals(groupLeader);
     }
 
+    @ManagedAttribute
     public int getClusterSize() {
         return clusterSize;
     }
@@ -149,6 +159,7 @@ public class QuorumBasedCluster implements CallBack, Cluster {
         gms.shutdown(GMSConstants.shutdownType.INSTANCE_SHUTDOWN);
     }
     
+    @ManagedOperation
     public void warmUp() {
         try {
             LOG.info("Warming up cluster...");
@@ -215,8 +226,8 @@ public class QuorumBasedCluster implements CallBack, Cluster {
         }
     }
     
-    public List<String> getAllCurrentMembers() {
-        return gms.getGroupHandle().getAllCurrentMembers();
+    public List<String> getCurrentMembers() {
+        return gms.getGroupHandle().getCurrentCoreMembers();
     }
 
     private byte[] serialize(Serializable obj) throws IOException {
@@ -234,7 +245,28 @@ public class QuorumBasedCluster implements CallBack, Cluster {
         return obj;
     }
 
+    @ManagedAttribute
     private boolean isClusterReady() {
-        return gms.getGroupHandle().getAllCurrentMembers().size() > clusterSize / 2;
+        return gms.getGroupHandle().getCurrentCoreMembers().size() > clusterSize / 2;
+    }
+    
+    @ManagedAttribute
+    public int getNumberOfCurrentMembers() {
+        return gms.getGroupHandle().getCurrentCoreMembers().size();
+    }
+    
+    @ManagedAttribute
+    public String getActiveMembers() {
+        return String.valueOf(getCurrentMembers());
+    }
+
+    @ManagedAttribute
+    public String getInactiveMembers() {
+    	Collection<String> members = new ArrayList<String>();
+    	
+    	members.addAll(gms.getGroupHandle().getAllCurrentMembers());
+    	members.removeAll(getCurrentMembers());
+    	
+        return String.valueOf(members);
     }
 }

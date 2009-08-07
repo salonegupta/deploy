@@ -104,7 +104,7 @@ public class MockClusteredNode implements ClusteredNode, ApplicationContextAware
     }
     
     public String getGroupDetails() throws Exception {
-    	return "" + service.getCluster().getAllCurrentMembers();
+    	return "" + service.getCluster().getCurrentMembers();
     }
     
     public boolean isCoordinator() throws Exception {

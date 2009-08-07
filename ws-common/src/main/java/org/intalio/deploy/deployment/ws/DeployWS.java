@@ -18,8 +18,12 @@ import static org.intalio.deploy.deployment.ws.DeployWSConstants.ACTIVATE;
 import static org.intalio.deploy.deployment.ws.DeployWSConstants.ZIP;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import org.apache.axiom.om.OMElement;
 import org.apache.axis2.AxisFault;
@@ -34,8 +38,11 @@ import org.intalio.deploy.registry.Registry;
 import org.intalio.deploy.registry.RegistryFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.FileSystemXmlApplicationContext;
 import org.springframework.core.io.FileSystemResource;
 
 
@@ -80,17 +87,35 @@ public class DeployWS {
                 ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
                 Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
                 try {
-                    FileSystemResource config = new FileSystemResource(new File(_configDir, "deploy-service.xml"));
-                    XmlBeanFactory factory = new XmlBeanFactory(config);
-        
-                    PropertyPlaceholderConfigurer propsCfg = new PropertyPlaceholderConfigurer();
-                    propsCfg.setSearchSystemEnvironment(true);
-                    propsCfg.postProcessBeanFactory(factory);
+                	Collection<String> configPaths = new HashSet<String>(); 
+                	configPaths.add("file://" + new File(_configDir, "deploy-service.xml").getAbsolutePath());
+                	File clusterConfigFile = new File(_configDir, "cluster-config.xml");
+                	if( clusterConfigFile.exists() ) {
+                		configPaths.add("file://" + clusterConfigFile.getCanonicalPath());
+                	}
+                	File jmxConfigFile = new File(_configDir, "jmx.xml");
+                	if( jmxConfigFile.exists() ) {
+                		configPaths.add("file://" + jmxConfigFile.getCanonicalPath());
+                	}
+                	
+                	FileSystemXmlApplicationContext factory = new FileSystemXmlApplicationContext(configPaths.toArray(new String[] {}));
                     _deployService = (DeploymentServiceImpl) factory.getBean("deploymentService");
                     
-                    Cluster clusterConfigFromItsOwnConfigFile = getClusterConfig(_deployService);
-                    if( clusterConfigFromItsOwnConfigFile != null ) {
-                        _deployService.setCluster(clusterConfigFromItsOwnConfigFile);
+                    Cluster cluster = null;
+                    try {
+                    	cluster = (Cluster) factory.getBean("clusterConfig");
+                    } catch( NoSuchBeanDefinitionException nsbde ) {
+                    	// not defined
+                    }
+                    
+                    if( cluster != null ) {
+                        if( LOG.isInfoEnabled() ) LOG.info("Found clustering configuration at:" + configPaths + ".");
+                        
+                        if( cluster.getListener() instanceof NullClusterListener ) {
+                            cluster.setListener(_deployService);
+                        }
+                        
+                        _deployService.setCluster(cluster);
                     }
                     
                     _deployService.init();
@@ -103,6 +128,9 @@ public class DeployWS {
         } catch (RuntimeException except) {
             LOG.error("Error during initialization of deployment service", except);
             throw except;
+        } catch( Exception e ) {
+            LOG.error("Error during initialization of deployment service", e);
+            throw new RuntimeException(e);
         }
     }
 

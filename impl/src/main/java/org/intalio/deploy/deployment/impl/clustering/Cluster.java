@@ -51,7 +51,7 @@ public interface Cluster {
      * 
      * @return a list of strings each of which represents a member node's identifier
      */
-    List<String> getAllCurrentMembers();
+    List<String> getCurrentMembers();
 
     /**
      * Returns the cluster listener that's listening on this cluster.
