@@ -162,7 +162,7 @@ public class QuorumBasedCluster implements CallBack, Cluster {
     @ManagedOperation
     public void warmUp() {
         try {
-            LOG.info("Warming up cluster...");
+            LOG.debug("Warming up cluster...");
             gms.getGroupHandle().sendMessage("Component", ("WARM_UP from " + serverId).getBytes());
         } catch( Exception e ) {
             throw new RuntimeException(e);

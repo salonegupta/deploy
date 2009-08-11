@@ -29,11 +29,17 @@ public class DefaultDeployMBeanServer implements DeployMBeanServer, ApplicationC
 
     public void registerAssembly(DeployedAssembly assembly) {
         MBeanExporter exporter = (MBeanExporter)context.getBean("exporter");
+        ObjectName name = null;
+        Object managedObject = null;
         try {
-            ObjectName name = getAssemblyObjectName(assembly.getAssemblyId());
+            name = getAssemblyObjectName(assembly.getAssemblyId());
+            
             LOG.debug("Registering " + name);
-            exporter.registerManagedResource(new DeployedAssemblyMBean(assembly), name);
+            managedObject = new DeployedAssemblyMBean(assembly);
+            exporter.registerManagedResource(managedObject, name);
             LOG.debug("Registered " + name);
+        } catch(UnableToRegisterMBeanException utrme) {
+            handleUnableToRegisterMBeanException(utrme, managedObject, name, exporter);
         } catch(Exception mone) {
             LOG.error("", mone);
         }
@@ -54,30 +60,40 @@ public class DefaultDeployMBeanServer implements DeployMBeanServer, ApplicationC
     public void registerComponent(DeployedAssembly assembly, DeployedComponent component) {
         MBeanExporter exporter = (MBeanExporter)context.getBean("exporter");
         ObjectName name = null;
+        Object managedObject = null;
         try {
             name = getComponentObjectName(component.getComponentManagerName(), component.getComponentId());
+
             LOG.debug("Registering " + name);
-            exporter.registerManagedResource(new DeployedComponentMBean(component), name);
+            managedObject = new DeployedComponentMBean(component);
+            exporter.registerManagedResource(managedObject, name);
             LOG.debug("Registered " + name);
         } catch(UnableToRegisterMBeanException utrme) {
-            if( utrme.getRootCause() != null && 
-                    (utrme.getRootCause() instanceof InstanceAlreadyExistsException) &&
-                    reRegisterIfExists ) {
-                try {
-                    // unregister existing one and start a new one
-                    LOG.debug("Unregistering the existing " + name + " instance.");
-                    exporter.getServer().unregisterMBean(name);
-                    exporter.registerManagedResource(new DeployedComponentMBean(component), name);
-                    LOG.debug("Re-registered " + name + ".");
-                } catch( Exception e2 ) {
-                    LOG.error("Re-binding failed ", e2);
-                }
-            }
+            handleUnableToRegisterMBeanException(utrme, managedObject, name, exporter);
         } catch(Exception mone) {
             LOG.error("MBean is disabled due to an error: ", mone);
         }
     }
 
+    private void handleUnableToRegisterMBeanException(UnableToRegisterMBeanException utrme,
+            Object managedObject, ObjectName name, MBeanExporter exporter) {
+        if( utrme.getRootCause() != null && 
+                (utrme.getRootCause() instanceof InstanceAlreadyExistsException) &&
+                reRegisterIfExists ) {
+            try {
+                // unregister existing one and start a new one
+                LOG.debug("Unregistering the existing " + name + " instance.");
+                exporter.getServer().unregisterMBean(name);
+                exporter.registerManagedResource(managedObject, name);
+                LOG.debug("Re-registered " + name + ".");
+            } catch( Exception e2 ) {
+                LOG.error("Re-binding failed ", e2);
+            }
+        } else {
+            LOG.error("MBean is disabled due to an error: ", utrme);
+        }
+    }
+    
     public void unregisterComponent(String managerName, ComponentId cid) {
         MBeanExporter exporter = (MBeanExporter)context.getBean("exporter");
         try {

@@ -159,6 +159,10 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     // Accessors / Setters
     //
 
+    public DeployMBeanServer getDeployMBeanServer() {
+    	return _deployMBeanServer;
+    }
+    
     public void setDeployMBeanServer(DeployMBeanServer deployMBeanServer) {
         _deployMBeanServer = deployMBeanServer;
     }
