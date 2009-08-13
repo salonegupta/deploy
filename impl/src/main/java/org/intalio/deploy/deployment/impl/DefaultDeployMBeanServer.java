@@ -28,10 +28,11 @@ public class DefaultDeployMBeanServer implements DeployMBeanServer, ApplicationC
     }
 
     public void registerAssembly(DeployedAssembly assembly) {
-        MBeanExporter exporter = (MBeanExporter)context.getBean("exporter");
+        MBeanExporter exporter = null;
         ObjectName name = null;
         Object managedObject = null;
         try {
+            exporter = (MBeanExporter)context.getBean("exporter");
             name = getAssemblyObjectName(assembly.getAssemblyId());
             
             LOG.debug("Registering " + name);
@@ -46,8 +47,9 @@ public class DefaultDeployMBeanServer implements DeployMBeanServer, ApplicationC
     }
 
     public void unregisterAssembly(AssemblyId aid) {
-        MBeanExporter exporter = (MBeanExporter)context.getBean("exporter");
+        MBeanExporter exporter = null;
         try {
+            exporter = (MBeanExporter)context.getBean("exporter");
             ObjectName name = getAssemblyObjectName(aid);
             LOG.debug("Unregistering " + name);
             exporter.getServer().unregisterMBean(name);
@@ -58,10 +60,11 @@ public class DefaultDeployMBeanServer implements DeployMBeanServer, ApplicationC
     }
 
     public void registerComponent(DeployedAssembly assembly, DeployedComponent component) {
-        MBeanExporter exporter = (MBeanExporter)context.getBean("exporter");
+        MBeanExporter exporter = null;
         ObjectName name = null;
         Object managedObject = null;
         try {
+            exporter = (MBeanExporter)context.getBean("exporter");
             name = getComponentObjectName(component.getComponentManagerName(), component.getComponentId());
 
             LOG.debug("Registering " + name);
@@ -95,8 +98,9 @@ public class DefaultDeployMBeanServer implements DeployMBeanServer, ApplicationC
     }
     
     public void unregisterComponent(String managerName, ComponentId cid) {
-        MBeanExporter exporter = (MBeanExporter)context.getBean("exporter");
+        MBeanExporter exporter = null;
         try {
+            exporter = (MBeanExporter)context.getBean("exporter");
             ObjectName name = getComponentObjectName(managerName, cid);
             LOG.debug("Unregistering " + name);
             exporter.getServer().unregisterMBean(name);
@@ -125,6 +129,5 @@ public class DefaultDeployMBeanServer implements DeployMBeanServer, ApplicationC
     public void setApplicationContext(ApplicationContext context)
             throws BeansException {
         this.context = context;
-        
     }
 }
