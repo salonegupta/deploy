@@ -90,7 +90,7 @@ public class DeployWS {
                     if( clusterConfigFile.exists() ) {
                         configPaths.add("file://" + clusterConfigFile.getCanonicalPath());
                     }
-                    configPaths.add("file://" + new File(_configDir, "deploy-service.xml").getAbsolutePath());
+                    configPaths.add("file://" + new File(_configDir, "deploy-service.xml").getCanonicalPath());
                     
                     FileSystemXmlApplicationContext factory = new FileSystemXmlApplicationContext(configPaths.toArray(new String[] {}));
                     _deployService = (DeploymentServiceImpl) factory.getBean("deploymentService");
