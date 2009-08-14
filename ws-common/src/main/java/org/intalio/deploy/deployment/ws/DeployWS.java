@@ -19,6 +19,7 @@ import static org.intalio.deploy.deployment.ws.DeployWSConstants.ZIP;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -84,13 +85,14 @@ public class DeployWS {
 
                     File jmxConfigFile = new File(_configDir, "jmx.xml");
                     if( jmxConfigFile.exists() ) {
-                        configPaths.add("file://" + jmxConfigFile.getCanonicalPath());
+                        configPaths.add(String.valueOf(jmxConfigFile.toURI()));
                     }
                     File clusterConfigFile = new File(_configDir, "cluster-config.xml");
                     if( clusterConfigFile.exists() ) {
-                        configPaths.add("file://" + clusterConfigFile.getCanonicalPath());
+                        configPaths.add(String.valueOf(clusterConfigFile.toURI()));
                     }
-                    configPaths.add("file://" + new File(_configDir, "deploy-service.xml").getCanonicalPath());
+                    
+                    configPaths.add(String.valueOf(new File(_configDir, "deploy-service.xml").toURI()));
                     
                     FileSystemXmlApplicationContext factory = new FileSystemXmlApplicationContext(configPaths.toArray(new String[] {}));
                     _deployService = (DeploymentServiceImpl) factory.getBean("deploymentService");
