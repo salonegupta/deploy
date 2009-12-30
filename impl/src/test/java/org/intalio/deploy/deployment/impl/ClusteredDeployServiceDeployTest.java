@@ -51,13 +51,13 @@ public class ClusteredDeployServiceDeployTest extends TestCase {
         Utils.deleteRecursively(_deployDir);
 
         XmlBeanFactory factory = new XmlBeanFactory(new ClassPathResource("clustered-test.xml"));
-		cluster = (ClusterProxy)factory.getBean("cluster");
-		cluster.startUpProcesses();
-		Thread.sleep(6000);
-		
-		cluster.setNodes((List<ClusteredNode>) factory.getBean("nodes"));
+        cluster = (ClusterProxy)factory.getBean("cluster");
+        cluster.startUpProcesses();
+        Thread.sleep(6000);
+        
+        cluster.setNodes((List<ClusteredNode>) factory.getBean("nodes"));
 
-		// setup database
+        // setup database
         DataSource ds = cluster.getDataSource();
 
         ClassPathResource script = new ClassPathResource("deploy.derby.sql");
@@ -75,17 +75,17 @@ public class ClusteredDeployServiceDeployTest extends TestCase {
     }
 
     public void tearDown() throws Exception {
-    	cluster.shutDownProcesses();
+        cluster.shutDownProcesses();
     }
 
     public DeploymentServiceImpl loadDeploymentService(String xmlConfigFile)
-    	throws Exception
+        throws Exception
     {
         ClassPathResource config = new ClassPathResource(xmlConfigFile);
         XmlBeanFactory factory = new XmlBeanFactory( config );
         DeploymentServiceImpl deployService = (DeploymentServiceImpl) factory.getBean("deploymentService");
         
-		return deployService;
+        return deployService;
     }
 
     public void testDeployBasic1() throws Exception {
@@ -100,22 +100,22 @@ public class ClusteredDeployServiceDeployTest extends TestCase {
         assertEquals(0, result.getMessages().size());
 
         assertEquals(3, waitForCompletion(new Condition() {
-			public boolean doesSatisfy(ClusteredNode node) {
-				return node.isDeployed(new ComponentId(result.getAssemblyId(), "component1"));
-			}
+            public boolean doesSatisfy(ClusteredNode node) {
+                return node.isDeployed(new ComponentId(result.getAssemblyId(), "component1"));
+            }
         }));
         
         assertEquals(3, waitForCompletion(new Condition() {
-			public boolean doesSatisfy(ClusteredNode node) {
-				return node.isActivated(new ComponentId(result.getAssemblyId(), "component1"));
-			}
+            public boolean doesSatisfy(ClusteredNode node) {
+                return node.isActivated(new ComponentId(result.getAssemblyId(), "component1"));
+            }
         }));
 
         coordinator.undeployAssembly(result.getAssemblyId());
         assertEquals(3, waitForCompletion(new Condition() {
-			public boolean doesSatisfy(ClusteredNode node) {
-				return !node.isDeployed(new ComponentId(result.getAssemblyId(), "component1"));
-			}
+            public boolean doesSatisfy(ClusteredNode node) {
+                return !node.isDeployed(new ComponentId(result.getAssemblyId(), "component1"));
+            }
         }));
     }
 
@@ -134,9 +134,9 @@ public class ClusteredDeployServiceDeployTest extends TestCase {
         assertFalse(coordinator.isDeployed(new ComponentId(result.getAssemblyId(), "component1")));
 
         assertEquals(3, waitForCompletion(new Condition() {
-			public boolean doesSatisfy(ClusteredNode node) {
-				return !node.isDeployed(new ComponentId(result.getAssemblyId(), "component1"));
-			}
+            public boolean doesSatisfy(ClusteredNode node) {
+                return !node.isDeployed(new ComponentId(result.getAssemblyId(), "component1"));
+            }
         }));
     }
 
@@ -149,9 +149,9 @@ public class ClusteredDeployServiceDeployTest extends TestCase {
         LOG.info("testStart() started");
         
         assertEquals(3, waitForCompletion(new Condition() {
-			public boolean doesSatisfy(ClusteredNode node) {
-				return node.getDeployedAssemblies().size() == 1;
-			}
+            public boolean doesSatisfy(ClusteredNode node) {
+                return node.getDeployedAssemblies().size() == 1;
+            }
         }));
         coordinator = cluster.findCoordinator();
     }
@@ -171,23 +171,23 @@ public class ClusteredDeployServiceDeployTest extends TestCase {
         // scan should not deployed assembly yet
         wait(2);
         assertEquals(3, waitForCompletion(new Condition() {
-			public boolean doesSatisfy(ClusteredNode node) {
-				return node.getDeployedAssemblies().size() == 0;
-			}
+            public boolean doesSatisfy(ClusteredNode node) {
+                return node.getDeployedAssemblies().size() == 0;
+            }
         }));
 
         // delete invalid file, scan should now deploy assembly
         Utils.deleteFile(new File(_deployDir, "assembly1.invalid"));
         wait(2);
         assertEquals(3, waitForCompletion(new Condition() {
-			public boolean doesSatisfy(ClusteredNode node) {
-				return node.getDeployedAssemblies().size() == 1;
-			}
+            public boolean doesSatisfy(ClusteredNode node) {
+                return node.getDeployedAssemblies().size() == 1;
+            }
         }));
         assertEquals(3, waitForCompletion(new Condition() {
-			public boolean doesSatisfy(ClusteredNode node) {
-				return node.isDeployed(new ComponentId(new AssemblyId("assembly1"), "component1"));
-			}
+            public boolean doesSatisfy(ClusteredNode node) {
+                return node.isDeployed(new ComponentId(new AssemblyId("assembly1"), "component1"));
+            }
         }));
     }
     
@@ -228,9 +228,9 @@ public class ClusteredDeployServiceDeployTest extends TestCase {
     }
 
     public void testDeployZipFail() throws Exception {
-    	cluster.startDeploymentService();
-    	ClusteredNode coordinator = cluster.findCoordinator();
-    	
+        cluster.startDeploymentService();
+        ClusteredNode coordinator = cluster.findCoordinator();
+        
         File assemblyZip = new File(TestUtils.getTestBase(), "assembly1.zip");
 
         coordinator.failDeployment();
@@ -244,8 +244,8 @@ public class ClusteredDeployServiceDeployTest extends TestCase {
     }
 
     public void testDeployZipWithDotFails() throws Exception {
-    	cluster.startDeploymentService();
-    	ClusteredNode coordinator = cluster.findCoordinator();
+        cluster.startDeploymentService();
+        ClusteredNode coordinator = cluster.findCoordinator();
 
         File assemblyZip = new File(TestUtils.getTestBase(), "assembly1.zip");
 
@@ -258,8 +258,8 @@ public class ClusteredDeployServiceDeployTest extends TestCase {
     }
 
     public void testDeployWithDash() throws Exception {
-    	cluster.startDeploymentService();
-    	ClusteredNode coordinator = cluster.findCoordinator();
+        cluster.startDeploymentService();
+        ClusteredNode coordinator = cluster.findCoordinator();
 
         File assemblyZip = new File(TestUtils.getTestBase(), "assembly1.zip");
 
@@ -312,9 +312,9 @@ public class ClusteredDeployServiceDeployTest extends TestCase {
             i++;
         }
         assertEquals(3, waitForCompletion(new Condition() {
-			public boolean doesSatisfy(ClusteredNode node) {
-				return node.getDeployedAssemblies().size() == 1;
-			}
+            public boolean doesSatisfy(ClusteredNode node) {
+                return node.getDeployedAssemblies().size() == 1;
+            }
         }));
         assertTrue(f.exists());
     }
@@ -347,9 +347,9 @@ public class ClusteredDeployServiceDeployTest extends TestCase {
             i++;
         }
         assertEquals(3, waitForCompletion(new Condition() {
-			public boolean doesSatisfy(ClusteredNode node) {
-				return node.getDeployedAssemblies().size() == 0;
-			}
+            public boolean doesSatisfy(ClusteredNode node) {
+                return node.getDeployedAssemblies().size() == 0;
+            }
         }));
         assertFalse(new File(_deployDir, "assembly1.deployed").exists());
     }
@@ -363,22 +363,22 @@ public class ClusteredDeployServiceDeployTest extends TestCase {
     }
     
     interface Condition {
-    	public boolean doesSatisfy(ClusteredNode node);
+        public boolean doesSatisfy(ClusteredNode node);
     }
     
     int waitForCompletion(Condition condition) throws Exception {
         int completedNodeCnt = 0;
         
         for( int i = 0; i < 5 && completedNodeCnt < 2; i++ ) {
-        	if( completedNodeCnt < 2 ) {
-        		completedNodeCnt = 0;
-        	}
-        	for(ClusteredNode node : cluster.getNodes()) {
-		        if( condition.doesSatisfy(node) ) {
-		        	completedNodeCnt++;
-		        }
-        	}
-        	Thread.sleep(1000);
+            if( completedNodeCnt < 2 ) {
+                completedNodeCnt = 0;
+            }
+            for(ClusteredNode node : cluster.getNodes()) {
+                if( condition.doesSatisfy(node) ) {
+                    completedNodeCnt++;
+                }
+            }
+            Thread.sleep(1000);
         }
         
         return completedNodeCnt;
