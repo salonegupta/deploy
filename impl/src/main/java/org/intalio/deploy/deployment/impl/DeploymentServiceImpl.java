@@ -617,8 +617,6 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
             // Phase 1: undeploy missing assemblies
             Set<DeployedAssembly> undeploy = new HashSet<DeployedAssembly>();
-            LOG.debug(availableWithDeployMark.toString());// REMOVE
-            LOG.debug(available.toString());// REMOVE
             // check for previously deployed but now missing
             for (DeployedAssembly assembly : deployedMap.values()) {
                 // if helloWorld is removed but helloWorld.deployed is there,
