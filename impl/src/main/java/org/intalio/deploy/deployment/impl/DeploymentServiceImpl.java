@@ -591,8 +591,9 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             Set<AssemblyId> available = new HashSet<AssemblyId>();
             // read available assemblies
             {
-                File[] files = new File(_deployDir).listFiles();
-                if (files == null) {
+	            File deployDir = new File(_deployDir);
+                File[] files = deployDir.listFiles();
+                if (!deployDir.exists() || files == null) {
                     LOG.warn(_("Deployment directory not available: {0}", _deployDir));
                     return;
                 }
