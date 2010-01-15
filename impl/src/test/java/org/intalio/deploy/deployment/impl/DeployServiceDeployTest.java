@@ -384,6 +384,7 @@ public class DeployServiceDeployTest extends TestCase {
         assertTrue(f.exists());
     }
     
+    
     public void testRemoveViaFS() throws Exception {
         LOG.info("testRemoveViaFS");
         
@@ -412,6 +413,31 @@ public class DeployServiceDeployTest extends TestCase {
         }
         assertEquals(0, service.getDeployedAssemblies().size());
         assertFalse(new File(_deployDir, "assembly1.deployed").exists());
+    }
+    
+    public void testFSUnmounted() throws Exception {
+        LOG.info("testFSUnmounted");
+        
+        service.setScanPeriod(1);
+        start();
+
+        File assemblyZip = new File(TestUtils.getTestBase(), "assembly1.zip");
+
+        {
+        DeploymentResult result = service.deployAssembly("assembly1", new FileInputStream(assemblyZip), false);
+        assertTrue(result.isSuccessful());
+        }
+
+        assertEquals(1, service.getDeployedAssemblies().size());
+
+        File f = new File(_deployDir, "assembly1");
+        assertTrue(f.exists() && f.isDirectory());
+
+        // delete assembly directory, scan should now undeploy assembly
+        Utils.deleteRecursively(f);
+        Utils.deleteFile(new File(_deployDir, "assembly1.deployed"));
+        wait(5);
+        assertEquals(1, service.getDeployedAssemblies().size());
     }
 
     void wait(int seconds) {

@@ -589,6 +589,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             LOG.debug(_("Deployed assemblies: {0}", deployedMap.keySet()));
 
             Set<AssemblyId> available = new HashSet<AssemblyId>();
+            Set<AssemblyId> availableWithDeployMark = new HashSet<AssemblyId>();
             // read available assemblies
             {
 	            File deployDir = new File(_deployDir);
@@ -602,17 +603,30 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                     if (files[i].isDirectory()) {
                         AssemblyId aid = parseAssemblyId(files[i].getName());
                         available.add(aid);
+                    } else {
+                        String name = files[i].getName();
+                        if (name.endsWith(".deployed")) {
+                            availableWithDeployMark.add(parseAssemblyId(
+                                    name.substring(0, name.length() - ".deployed".length())));
+                        }
                     }
+                    
                 }
                 LOG.debug(_("Available assemblies on file system: {0}", available));
             }
 
             // Phase 1: undeploy missing assemblies
             Set<DeployedAssembly> undeploy = new HashSet<DeployedAssembly>();
-
+            LOG.debug(availableWithDeployMark.toString());// REMOVE
+            LOG.debug(available.toString());// REMOVE
             // check for previously deployed but now missing
             for (DeployedAssembly assembly : deployedMap.values()) {
-                if (!available.contains(assembly.getAssemblyId()))
+                // if helloWorld is removed but helloWorld.deployed is there,
+                // then undeploy.
+                // if you cannot find both it is possible the file system is in flux
+                // and you should not undeploy.
+                if (!available.contains(assembly.getAssemblyId()) && 
+                        availableWithDeployMark.contains(assembly.getAssemblyId()))
                     undeploy.add(assembly);
             }
 
