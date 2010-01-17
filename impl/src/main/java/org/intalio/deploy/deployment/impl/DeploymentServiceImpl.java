@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2005-2008 Intalio inc.
+ * Copyright (c) 2005-2010 Intalio inc.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -299,10 +299,17 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     }
 
     /**
-     * Stop the service
+     * Stop the service.
+     * Acquires a lock over the timer task and cancels it.
+     * Closes and disposes each deployment manager.
      */
     public void stop() {
         synchronized (LIFECYCLE_LOCK) {
+            //acquire the assemblies first, before you wait to
+            //acquire a lock over the timer task.
+            //this way you have better chances to get the assemblies
+            //before the connection to the DB closes.
+            Collection<DeployedAssembly> assemblies = getDeployedAssemblies();
             if (_serviceState == ServiceState.STARTED) {
                 _timer.cancel();
                 cluster.shutdown();
@@ -310,7 +317,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             _serviceState = ServiceState.STOPPING;
             LOG.info(_("DeploymentService state is now STOPPING"));
 
-            Collection<DeployedAssembly> assemblies = getDeployedAssemblies();
+            
             stopAndDispose(assemblies);
 
             _serviceState = null;
@@ -581,6 +588,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         if( !cluster.isCoordinator() ) {
             return;
         }
+        
+        
         
         LOG.debug(_("Scanning deployment directory {0}", _deployDir));
         LOG.debug(_("Component managers: {0}", _componentManagers));
@@ -954,7 +963,9 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
      */
     public DeploymentResult retire(AssemblyId assemblyId) {
         TemporaryResult results = new TemporaryResult(assemblyId);
-
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Retiring components matching " + assemblyId.getAssemblyName());
+        }
         Collection<DeployedAssembly> assembliesToRetire = new ArrayList<DeployedAssembly>();
         Map<AssemblyId, DeployedAssembly> assembliesById = _persist.load();
         for( AssemblyId id : assembliesById.keySet() ) {

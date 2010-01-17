@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2007-2008 Intalio inc.
+ * Copyright (c) 2007-2010 Intalio inc.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -12,14 +12,13 @@
 
 package org.intalio.deploy.deployment.ws;
 
+import static org.intalio.deploy.deployment.ws.DeployWSConstants.ACTIVATE;
 import static org.intalio.deploy.deployment.ws.DeployWSConstants.ASSEMBLY_NAME;
 import static org.intalio.deploy.deployment.ws.DeployWSConstants.ASSEMBLY_VERSION;
-import static org.intalio.deploy.deployment.ws.DeployWSConstants.ACTIVATE;
 import static org.intalio.deploy.deployment.ws.DeployWSConstants.ZIP;
 
 import java.io.File;
 import java.io.InputStream;
-import java.net.URI;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -48,11 +47,11 @@ public class DeployWS {
 
     public static final String CONFIG_DIR_PROPERTY = "org.intalio.deploy.configDirectory";
     
-    private static boolean _initialized;
+    private static DeployWS _instance;
+    
+    private File _configDir;
 
-    protected static File _configDir;
-
-    protected DeploymentServiceImpl _deployService;
+    DeploymentServiceImpl _deployService;
     
     public DeployWS() {
         this(true);
@@ -66,7 +65,7 @@ public class DeployWS {
     protected void initialize() {
         try {
             synchronized (DeployWS.class) {
-                if (_initialized)
+                if (_instance != null)
                     return;
                 LOG.debug("Initializing configuration.");
                 String configDir = System.getProperty(CONFIG_DIR_PROPERTY);
@@ -95,6 +94,9 @@ public class DeployWS {
                     configPaths.add(String.valueOf(new File(_configDir, "deploy-service.xml").toURI()));
                     
                     FileSystemXmlApplicationContext factory = new FileSystemXmlApplicationContext(configPaths.toArray(new String[] {}));
+                    if (_deployService != null) {
+                        _deployService.stop();
+                    }
                     _deployService = (DeploymentServiceImpl) factory.getBean("deploymentService");
 
                     if( LOG.isDebugEnabled() ) LOG.debug("MBeanServer used: " + _deployService.getDeployMBeanServer());
@@ -118,7 +120,7 @@ public class DeployWS {
                     
                     _deployService.init();
                     _deployService.start();
-                    _initialized = true;
+                    _instance = this;
                 } finally {
                     Thread.currentThread().setContextClassLoader(oldClassLoader);
                 }
@@ -154,10 +156,15 @@ public class DeployWS {
             throw new RuntimeException(except);
         }
     }
+    
+    private void checkInitialized() {
+        if (_instance == null) {
+            throw new IllegalStateException("Deployment service not initialized");
+        }
+    }
 
     public OMElement deployAssembly(OMElement requestEl) throws AxisFault {
-        if (!_initialized) throw new IllegalStateException("Deployment service not initialized");
-        
+        checkInitialized();
         OMParser request = new OMParser(requestEl);
         String assemblyName = request.getRequiredString(ASSEMBLY_NAME);
         boolean activate = request.getOptionalBoolean(ACTIVATE, true);
@@ -167,7 +174,7 @@ public class DeployWS {
     }
     
     public OMElement undeployAssembly(OMElement requestEl) throws AxisFault {
-        if (!_initialized) throw new IllegalStateException("Deployment service not initialized");
+        checkInitialized();
         OMParser request = new OMParser(requestEl);
         String assemblyName = request.getRequiredString(ASSEMBLY_NAME);
         int assemblyVersion = request.getRequiredInt(ASSEMBLY_VERSION);
@@ -177,13 +184,13 @@ public class DeployWS {
     }
 
     public OMElement getDeployedAssemblies(OMElement requestEl) throws AxisFault {
-        if (!_initialized) throw new IllegalStateException("Deployment service not initialized");
+        checkInitialized();
         Collection<DeployedAssembly> assemblies = _deployService.getDeployedAssemblies();
         return OMParser.marshallGetDeployedAssemblies(assemblies);
     }
 
     public OMElement activate(OMElement requestEl) throws AxisFault {
-        if (!_initialized) throw new IllegalStateException("Deployment service not initialized");
+        checkInitialized();
         OMParser request = new OMParser(requestEl);
         String assemblyName = request.getRequiredString(ASSEMBLY_NAME);
         int assemblyVersion = request.getRequiredInt(ASSEMBLY_VERSION);
@@ -193,11 +200,26 @@ public class DeployWS {
     }
 
     public OMElement retire(OMElement requestEl) throws AxisFault {
-        if (!_initialized) throw new IllegalStateException("Deployment service not initialized");
+        checkInitialized();
         OMParser request = new OMParser(requestEl);
         String assemblyName = request.getRequiredString(ASSEMBLY_NAME);
         AssemblyId aid = new AssemblyId(assemblyName);
         DeploymentResult result = _deployService.retire(aid);
         return OMParser.marshallDeploymentResult(result);
+    }
+
+    /**
+     * @return the current instance of DeployWS.
+     */
+    public static DeployWS getInstance() {
+        return _instance;
+    }
+    
+    /**
+     * Stops the deployment listener.
+     */
+    public void stop() {
+        _deployService.stop();
+        _instance = null;
     }
 }

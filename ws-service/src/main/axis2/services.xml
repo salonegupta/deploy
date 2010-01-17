@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<service name="DeploymentService" scope="application">
+<service name="DeploymentService" scope="application" class="org.intalio.deploy.deployment.ws.DeployWSLifeCycle">
     <description>Deployment Service</description>
     <operation name="deployAssembly">
         <messageReceiver class="org.apache.axis2.receivers.RawXMLINOutMessageReceiver"/>

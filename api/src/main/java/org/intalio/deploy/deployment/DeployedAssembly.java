@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2007-2008 Intalio inc.
+ * Copyright (c) 2007-2010 Intalio inc.
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -15,6 +15,10 @@ package org.intalio.deploy.deployment;
 import java.io.Serializable;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 /**
  * Deployed assembly.
  * <p>
@@ -22,6 +26,7 @@ import java.util.List;
  */
 public class DeployedAssembly implements Serializable {
     private static final long serialVersionUID = 2L;
+    private Logger LOG = LoggerFactory.getLogger(DeployedAssembly.class);
     
     final AssemblyId _aid;
     final String _assemblyDir;
@@ -30,6 +35,15 @@ public class DeployedAssembly implements Serializable {
 
     public DeployedAssembly(AssemblyId assemblyId, String assemblyDir, List<DeployedComponent> components, boolean active)
     {
+        if (LOG.isTraceEnabled()) {
+            StringBuilder builder = new StringBuilder();
+            builder.append("Created assembly with " + assemblyId +" under " + assemblyDir + "(active=" + active + ")" );
+            for (DeployedComponent component : components) {
+                builder.append(component.toString());
+                builder.append(",");
+            }
+            LOG.trace(builder.toString());
+        }
         _aid = assemblyId;
         _assemblyDir = assemblyDir;
         _components = components;
