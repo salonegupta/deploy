@@ -41,7 +41,7 @@ public class DeployWSLifeCycle implements ServiceLifeCycle {
        }
        DeployWS ws = DeployWS.getInstance();
        if (ws != null) {
-           DeployWS.getInstance().stop();
+           ws.stop();
        }
     }
 
