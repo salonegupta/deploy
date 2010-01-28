@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
  */
 public class DeployedAssembly implements Serializable {
     private static final long serialVersionUID = 2L;
-    private Logger LOG = LoggerFactory.getLogger(DeployedAssembly.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DeployedAssembly.class);
     
     final AssemblyId _aid;
     final String _assemblyDir;
