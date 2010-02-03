@@ -73,6 +73,20 @@ public class DeployWSTest extends TestCase {
             ((DeployClientMock)_client)._deployWS._deployService.getCallback().available(mock);
         }
     }
+    
+    @Test
+    public void testDisableChunking() throws Exception {
+        //by default, the deploy chunking is set to true:
+        assertTrue(new DeployClient().isChunked());
+        // a system property may be used to set the chunking
+        System.setProperty("deploy.chunked", "maybe");
+        assertTrue(new DeployClient().isChunked());
+        System.setProperty("deploy.chunked", "false");
+        System.err.println(new DeployClient().isChunked());// REMOVE
+        assertFalse(new DeployClient().isChunked());
+        System.setProperty("deploy.chunked", "maybe");
+        assertTrue(new DeployClient().isChunked());
+    }
 
     @Test
     public void testDeploy() throws Exception {

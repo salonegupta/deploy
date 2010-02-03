@@ -44,11 +44,14 @@ public class DeployClient implements DeploymentService {
     String _password;
     String _token;
     int _httpTimeout = -1;
+    boolean _chunked;
 
     /**
      * Create a deployment service client
      */
     public DeployClient() {
+        // give a chance for chunked to be set from a system property.
+        _chunked = "false".equals(System.getProperty("deploy.chunked")) ? false : true;
     }
 
     public String getEndpointURL() {
@@ -89,6 +92,14 @@ public class DeployClient implements DeploymentService {
 
     public void setHttpTimeout(int seconds) {
         _httpTimeout = seconds;
+    }
+    
+    public boolean isChunked() {
+        return _chunked;
+    }
+    
+    public void setChunked(boolean c) {
+        _chunked = c;
     }
 
     public DeploymentResult deployAssembly(String assemblyName, InputStream zip) throws RemoteException {
@@ -133,6 +144,9 @@ public class DeployClient implements DeploymentService {
         options.setAction(action);
         if (_httpTimeout > 0) {
             options.setProperty(org.apache.axis2.transport.http.HTTPConstants.SO_TIMEOUT, new Integer(_httpTimeout*1000));
+        }
+        if (!_chunked) {
+            options.setProperty(org.apache.axis2.transport.http.HTTPConstants.CHUNKED, false);
         }
         OMElement response = serviceClient.sendReceive(request);
         return new OMParser(response);
