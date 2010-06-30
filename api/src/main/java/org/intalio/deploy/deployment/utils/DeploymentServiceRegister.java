@@ -48,6 +48,11 @@ public class DeploymentServiceRegister {
     
     public void destroy() {
         try {
+            if (_timer != null) {
+                _timer.cancel();
+                _timer = null;
+            }
+
             DeploymentServiceCallback callback = _lookup.lookupDeploymentCallback();
             if (callback != null) callback.unavailable(_manager);
         } catch (Exception exception) {
