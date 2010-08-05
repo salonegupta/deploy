@@ -70,7 +70,7 @@ public class DeploymentServiceRegister {
                 _timer.cancel();
                 LOG.debug("Registered ComponentManager: "+getName());
             } catch (Throwable e) {
-                if (_debug) 
+                if (LOG.isDebugEnabled())
                     LOG.debug("DeploymentServiceCallback not yet available (ComponentManager="+getName()+"): " + e.toString(), e);
                 return;
             }

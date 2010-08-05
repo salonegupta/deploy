@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -51,6 +53,7 @@ import org.intalio.deploy.deployment.impl.clustering.RetiredMessage;
 import org.intalio.deploy.deployment.impl.clustering.SingleNodeCluster;
 import org.intalio.deploy.deployment.impl.clustering.UndeployedMessage;
 import org.intalio.deploy.deployment.spi.ComponentManager;
+import org.intalio.deploy.deployment.spi.ComponentManagerLockAware;
 import org.intalio.deploy.deployment.spi.ComponentManagerResult;
 import org.intalio.deploy.deployment.spi.DeploymentServiceCallback;    
 import org.intalio.deploy.registry.RemoteProxy;
@@ -111,7 +114,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
     private final Object LIFECYCLE_LOCK = new Object();
 
-    private final Object DEPLOY_LOCK = new Object();
+    private ReadWriteLock DEPLOY_LOCK = new ReentrantReadWriteLock();
 
     private DeploymentServiceCallbackImpl _callback = new DeploymentServiceCallbackImpl();
 
@@ -159,6 +162,26 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     // Accessors / Setters
     //
 
+    private void writeLockDeploy() {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Locking " + DEPLOY_LOCK);
+        }
+        DEPLOY_LOCK.writeLock().lock();
+        for (ComponentManager c : _componentManagers.values()) {
+            tryLock(c, true);
+        }
+    }
+
+    private void writeUnlockDeploy() {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Unlocking " + DEPLOY_LOCK);
+        }
+        for (ComponentManager c : _componentManagers.values()) {
+            tryLock(c, false);
+        }
+        DEPLOY_LOCK.writeLock().unlock();
+    }
+    
     public DeployMBeanServer getDeployMBeanServer() {
     	return _deployMBeanServer;
     }
@@ -346,7 +369,9 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             return convertToResult(except, newAssemblyId(assemblyName));
         }
 
-        synchronized (DEPLOY_LOCK) {
+        try {
+            writeLockDeploy();
+        	
             AssemblyId aid = versionAssemblyId(assemblyName);
             if (replaceExistingAssemblies) {
                 Collection<DeployedAssembly> deployed = getDeployedAssemblies();
@@ -386,6 +411,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             } finally {
                 clearMarkedAsInvalid(aid);
             }
+        } finally {
+            writeUnlockDeploy();
         }
     }
 
@@ -419,7 +446,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         }
 
         TemporaryResult results = new TemporaryResult(aid);
-        synchronized (DEPLOY_LOCK) {
+        try {
+            writeLockDeploy();
             // mark as invalid while we deploy to avoid concurrency issues with scanner
             setMarkedAsInvalid(aid, _("Deploying {0} ...", aid));
     
@@ -539,6 +567,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 results.add(null, null, error(msg));
                 _persist.rollbackTransaction(msg);
             }
+        } finally {
+            writeUnlockDeploy();
         }
         
         return results.finalResult();
@@ -567,7 +597,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         }
         onUndeployed(assembly);
         
-        synchronized(DEPLOY_LOCK) {
+        try {
+            writeLockDeploy();
             try {
                 return undeployAssembly(assembly);
             } finally {
@@ -577,6 +608,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                     LOG.warn(_("Exception while undeploying assembly {0}: {1}", assembly.getAssemblyId(), e.toString()));
                 }
             }
+        } finally {
+        	writeUnlockDeploy();
         }
     }
 
@@ -593,7 +626,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         
         LOG.debug(_("Scanning deployment directory {0}", _deployDir));
         LOG.debug(_("Component managers: {0}", _componentManagers));
-        synchronized (DEPLOY_LOCK) {
+        try {
+        	writeLockDeploy();
             Map<AssemblyId, DeployedAssembly> deployedMap = _persist.load();
             LOG.debug(_("Deployed assemblies: {0}", deployedMap.keySet()));
 
@@ -691,6 +725,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                     }
                 }
             }
+        } finally {
+        	writeUnlockDeploy();
         }
     }
 
@@ -698,15 +734,19 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
      * Obtain the current list of deployed assemblies
      */
     public Collection<DeployedAssembly> getDeployedAssemblies() {
-        synchronized (DEPLOY_LOCK) {
+        try {
+        	writeLockDeploy();
             Map<AssemblyId, DeployedAssembly> assemblies = _persist.load();
             return assemblies.values();
+        } finally {
+        	writeUnlockDeploy();
         }
     }
 
     public Collection<DeployedAssembly> readDeployedAssemblies() {
         List<DeployedAssembly> assemblies = new ArrayList<DeployedAssembly>();
-        synchronized (DEPLOY_LOCK) {
+        try {
+        	writeLockDeploy();
             File[] files = new File(_deployDir).listFiles();
             for (int i = 0; i < files.length; ++i) {
                 if (files[i].isDirectory()) {
@@ -720,6 +760,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                     }
                 }
             }
+        } finally {
+        	writeUnlockDeploy();
         }
         return assemblies;
     }
@@ -735,7 +777,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         AssemblyId aid = assembly.getAssemblyId();
 
         TemporaryResult result = new TemporaryResult(aid);
-        synchronized (DEPLOY_LOCK) {
+        try {
+        	writeLockDeploy();
             try {
                 // undeploy all components
                 for (DeployedComponent dc : assembly.getDeployedComponents()) {
@@ -765,6 +808,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 
                 _deployMBeanServer.unregisterAssembly(aid);
             }
+        } finally {
+        	writeUnlockDeploy();
         }
         return result.finalResult();
     }
@@ -835,6 +880,23 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         }
     }
 
+    private void tryLock(ComponentManager manager, boolean lock) {
+    	if (manager instanceof ComponentManagerLockAware) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Component Manager " + manager + " is Lock Aware");
+            }
+            if (lock) {
+                ((ComponentManagerLockAware) manager).deploymentLock();
+            } else {
+                ((ComponentManagerLockAware) manager).deploymentUnlock();
+            }
+    	} else {
+    		if (LOG.isDebugEnabled()) {
+    			LOG.debug("Component Manager " + manager + " is not Lock Aware, deployment withing engine is not atomic");
+    		}
+    	}
+    }
+    
     private DeployedAssembly initializeAndStart(AssemblyId aid) {
         DeployedAssembly assembly = loadAssemblyState(aid);
         // patch with the one from DB
@@ -1025,7 +1087,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     }
     
     private void internalStart() {
-        synchronized (DEPLOY_LOCK) {
+        try {
+        	writeLockDeploy();
             try {
                 scan();
             } catch (Exception e) {
@@ -1050,6 +1113,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
                 _timer.schedule(_scanTask, _scanPeriod * 1000, _scanPeriod * 1000);
             }
+        } finally {
+        	writeUnlockDeploy();
         }
     }
 
@@ -1331,7 +1396,9 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             
             synchronized (LIFECYCLE_LOCK) {
                 if (ServiceState.STARTED.equals(_serviceState)) {
-                    synchronized (DEPLOY_LOCK) {
+                    try {
+                    	writeLockDeploy();
+                    	
                         Collection<DeployedAssembly> assemblies = getDeployedAssemblies();
                         for (DeployedAssembly assembly : assemblies) {
                             Collection<DeployedComponent> components = assembly.getDeployedComponents();
@@ -1353,6 +1420,12 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                                 }
                             }
                         }
+                    } finally {
+                    	writeUnlockDeploy();
+                    }
+                } else {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("State is " + _serviceState);
                     }
                 }
             }
