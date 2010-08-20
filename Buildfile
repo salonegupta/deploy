@@ -1,4 +1,4 @@
-
+require "buildr4osgi"
 require "buildr/xmlbeans"
 #require "buildr/cobertura"
 
@@ -13,6 +13,7 @@ define "deploy" do
   project.version = VERSION_NUMBER
   project.group = "org.intalio.deploy"
   
+  compile.options.source = "1.5"
   compile.options.target = "1.5"
 
   define "registry" do
