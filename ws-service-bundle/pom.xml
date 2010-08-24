@@ -45,9 +45,12 @@
         !junit.framework*,
         com.sun.enterprise*;resolution:=optional,
         org.apache.axis2.osgi,
+        org.springframework.beans.factory.xml,
+        org.springframework.osgi,
         *
                         </Import-Package>
                         <Web-ContextPath>/deploy-service</Web-ContextPath>
+                        <Embed-Dependency>*;inline=*.xml</Embed-Dependency>
                         <DynamicImport-Package>*</DynamicImport-Package>
                     </instructions>
                 </configuration>

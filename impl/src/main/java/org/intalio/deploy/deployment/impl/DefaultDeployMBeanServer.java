@@ -27,12 +27,16 @@ public class DefaultDeployMBeanServer implements DeployMBeanServer, ApplicationC
         this.reRegisterIfExists = reRegisterIfExists;
     }
 
+    private MBeanExporter getMBeanExporter() {
+    	return (MBeanExporter)context.getBean("exporter");
+    }
+
     public void registerAssembly(DeployedAssembly assembly) {
         MBeanExporter exporter = null;
         ObjectName name = null;
         Object managedObject = null;
         try {
-            exporter = (MBeanExporter)context.getBean("exporter");
+            exporter = getMBeanExporter();
             name = getAssemblyObjectName(assembly.getAssemblyId());
             
             LOG.debug("Registering " + name);
@@ -49,7 +53,7 @@ public class DefaultDeployMBeanServer implements DeployMBeanServer, ApplicationC
     public void unregisterAssembly(AssemblyId aid) {
         MBeanExporter exporter = null;
         try {
-            exporter = (MBeanExporter)context.getBean("exporter");
+            exporter = getMBeanExporter();
             ObjectName name = getAssemblyObjectName(aid);
             LOG.debug("Unregistering " + name);
             exporter.getServer().unregisterMBean(name);
@@ -64,7 +68,7 @@ public class DefaultDeployMBeanServer implements DeployMBeanServer, ApplicationC
         ObjectName name = null;
         Object managedObject = null;
         try {
-            exporter = (MBeanExporter)context.getBean("exporter");
+            exporter = getMBeanExporter();
             name = getComponentObjectName(component.getComponentManagerName(), component.getComponentId());
 
             LOG.debug("Registering " + name);
@@ -100,7 +104,7 @@ public class DefaultDeployMBeanServer implements DeployMBeanServer, ApplicationC
     public void unregisterComponent(String managerName, ComponentId cid) {
         MBeanExporter exporter = null;
         try {
-            exporter = (MBeanExporter)context.getBean("exporter");
+            exporter = getMBeanExporter();
             ObjectName name = getComponentObjectName(managerName, cid);
             LOG.debug("Unregistering " + name);
             exporter.getServer().unregisterMBean(name);

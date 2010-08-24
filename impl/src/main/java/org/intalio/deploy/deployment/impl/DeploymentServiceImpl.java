@@ -76,7 +76,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
     public static final String DEPLOY_COMPONENT = "DeploymentService";
     
-    public static final String DEFAULT_DATASOURCE_JNDI_PATH = "java:/comp/env/jdbc/BPMSDB";
+    public static final String DEFAULT_DATASOURCE_JNDI_PATH = "BPMSDB";
     
     //
     // Configuration
