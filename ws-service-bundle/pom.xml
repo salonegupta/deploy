@@ -44,8 +44,11 @@
         !com.sun.mirror*,
         !junit.framework*,
         com.sun.enterprise*;resolution:=optional,
+        org.apache.axis2.osgi,
         *
                         </Import-Package>
+                        <Web-ContextPath>/deploy-service</Web-ContextPath>
+                        <DynamicImport-Package>*</DynamicImport-Package>
                     </instructions>
                 </configuration>
             </plugin>
@@ -65,6 +68,11 @@
         <dependency>
             <groupId>org.intalio.deploy</groupId>
             <artifactId>deploy-registry</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.intalio.deploy</groupId>
+            <artifactId>deploy-ws-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
