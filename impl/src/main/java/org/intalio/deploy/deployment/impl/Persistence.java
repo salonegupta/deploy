@@ -163,7 +163,7 @@ public class Persistence {
         Connection c = null;
         try {
             c = getConnection();
-            EasyStatement inserta = new EasyStatement(c, "UPDATE DEPLOY_ASSEMBLIES SET CACTIVE = 0 WHERE ASSEMBLY = ? AND VERSION = ?");
+            EasyStatement inserta = new EasyStatement(c, "UPDATE DEPLOY_ASSEMBLIES SET CACTIVE = 1 WHERE ASSEMBLY = ? AND VERSION = ?");
             try {
                 inserta.write(assembly);
                 inserta.write(version);
