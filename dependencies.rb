@@ -20,7 +20,7 @@ APACHE_COMMONS = {
 APACHE_DERBY = "org.apache.derby:derby:jar:10.2.2.0"
 APACHE_DERBY_NET = "org.apache.derby:derbynet:jar:10.2.2.0"
 APACHE_DERBY_CLIENT = "org.apache.derby:derbyclient:jar:10.2.2.0"
-AXIOM = group("axiom-api", "axiom-dom", "axiom-impl", :under=>"org.apache.ws.commons.axiom", :version=>"1.2.7")
+AXIOM = group("axiom-api", "axiom-dom", "axiom-impl", :under=>"org.apache.ws.commons.axiom", :version=>"1.2.11")
 
 BACKPORT = "backport-util-concurrent:backport-util-concurrent:jar:3.1"
 
@@ -35,7 +35,7 @@ JUNIT = "junit:junit:jar:4.4"
 
 LOG4J = "log4j:log4j:jar:1.2.15"
 
-NEETHI = "org.apache.neethi:neethi:jar:2.0.4"
+NEETHI = "org.apache.neethi:neethi:jar:2.0.5"
 
 SUNACTIVATION = ["javax.activation:activation:jar:1.1.1"]
 SUNMAIL = ["javax.mail:mail:jar:1.4.1", SUNACTIVATION]
@@ -56,7 +56,7 @@ STAX_API = [ "stax:stax-api:jar:1.0.1" ]
 TAGLIBS = [ "taglibs:standard:jar:1.1.2" ]
 
 WOODSTOX = [ "woodstox:wstx-asl:jar:3.2.4" ]
-WS_COMMONS_SCHEMA = "org.apache.ws.commons.schema:XmlSchema:jar:1.3.1"
+WS_COMMONS_SCHEMA = "org.apache.ws.commons.schema:XmlSchema:jar:1.4.3"
 WSDL4J = [ "wsdl4j:wsdl4j:jar:1.6.1" ]
 
 XERCES = [
@@ -66,7 +66,7 @@ XMLBEANS = "org.apache.xmlbeans:xmlbeans:jar:2.4.0"
 XMLUNIT = ["xmlunit:xmlunit:jar:1.1"]
 
 AXIS2 = [
-  group("axis2-kernel", "axis2-adb", "axis2-xmlbeans", "axis2-json", :under=>"org.apache.axis2", :version=>"1.4"),
+  group("axis2-kernel", "axis2-adb", "axis2-xmlbeans", "axis2-json", :under=>"org.apache.axis2", :version=>"1.5.5"),
   BACKPORT,
   NEETHI,
   SUNMAIL
