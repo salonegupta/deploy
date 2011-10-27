@@ -8,14 +8,14 @@
 	<bean id="cluster" class="org.intalio.deploy.deployment.impl.ClusterProxy">
 		<property name="derbyNetworkServer">
 			<bean class="org.intalio.deploy.deployment.impl.DerbyNetworkServerResource" init-method="start">
-				<property name="port" value="1527"/>
+				<property name="port" value="1528"/>
 			</bean>
 		</property>
         
 		<property name="dataSource">
 			<bean class="org.apache.commons.dbcp.BasicDataSource">
 		        <property name="driverClassName" value="org.apache.derby.jdbc.ClientDriver"/>
-		        <property name="url" value="jdbc:derby://localhost:1527/target/JPADB;create=true"/>
+		        <property name="url" value="jdbc:derby://localhost:1528/target/JPADB;create=true"/>
 		        <property name="username" value="APP"/>
 		        <property name="password" value="APP"/>
 		    </bean>
