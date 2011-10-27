@@ -138,7 +138,7 @@ public final class EasyStatement {
 			prepareStatement();
 			result = _statement.executeQuery();
 		} finally {
-			if (result != null)
+			if (result != null && !result.isClosed())
 				result.close();
 		}
         return new EasyResultSet(result);
