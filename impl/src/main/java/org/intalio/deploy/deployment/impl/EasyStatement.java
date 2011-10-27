@@ -133,10 +133,14 @@ public final class EasyStatement {
      * Execute the SQL query and return an EasyResultSet.
      */
     public EasyResultSet executeQuery() throws SQLException {
-        ResultSet result;
-
-        prepareStatement();
-        result = _statement.executeQuery();
+        ResultSet result = null;
+		try {
+			prepareStatement();
+			result = _statement.executeQuery();
+		} finally {
+			if (result != null)
+				result.close();
+		}
         return new EasyResultSet(result);
     }
 
