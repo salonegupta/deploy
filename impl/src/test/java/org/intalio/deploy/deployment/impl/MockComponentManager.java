@@ -139,4 +139,32 @@ public class MockComponentManager implements ComponentManager {
             _path = path;
         }
     }
+
+	@Override
+	public void activateProcess(ComponentId name, File path,
+			List<String> deployedResources, String pipaFormUrl) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void retireAssembly(ComponentId name, File path,
+			List<String> deployedResources) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void retireProcess(ComponentId name, File path,
+			List<String> deployedResources, String pipaFormUrl) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void undeploy(ComponentId componentId, File file,
+			List<String> deployedResources, boolean active) {
+		// TODO Auto-generated method stub
+		
+	}
 }

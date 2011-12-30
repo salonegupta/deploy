@@ -198,6 +198,58 @@ public class Persistence {
             close(c);
         }
     }
+    
+    /**
+     * Retire *any* currently active version of the current assembly
+     */
+    void retireAssembly(AssemblyId assemblyId) throws PersistenceException {
+        Connection c = null;
+        try {
+            c = getConnection();
+            EasyStatement inserta = new EasyStatement(c, "UPDATE DEPLOY_ASSEMBLIES SET CACTIVE = 0 WHERE ASSEMBLY = ? AND VERSION = ?");
+            try {
+                inserta.write(assemblyId.getAssemblyName());
+                inserta.write(assemblyId.getAssemblyVersion());
+                inserta.execute();
+            } finally {
+                inserta.close();
+            }
+        } catch (SQLException e) {
+            throw new PersistenceException(e);
+        } finally {
+            close(c);
+        }
+    }
+    
+    
+    String fetchPIPAUrl(AssemblyId assemblyId, String processName) throws PersistenceException {
+        Connection c = null;
+        try {
+            c = getConnection();
+            EasyResultSet rs=null;
+            EasyStatement selecta = new EasyStatement(c, "SELECT RESOURCE_ID from DEPLOY_RESOURCES WHERE ASSEMBLY = ? AND VERSION = ? AND MANAGER='pipa' AND RESOURCE_ID LIKE '%"+processName+"%'");            
+            try {
+            	selecta.write(assemblyId.getAssemblyName());
+                selecta.write(assemblyId.getAssemblyVersion());
+                rs=selecta.executeQuery();
+                while (rs.next()) {
+                    return rs.readString();                 
+                }
+                
+                
+            } finally {
+            	if(rs!=null) rs.close();
+            	selecta.close();
+            	
+            }
+        } catch (SQLException e) {
+            throw new PersistenceException(e);
+        } finally {
+            close(c);
+        }
+        return null;
+    }
+
     /**
      * Load persistent deployed state
      */
@@ -419,4 +471,32 @@ public class Persistence {
             return super.toString() + "." + _componentType;
         }
     }
+
+
+	public int getAssemblyVersion(String assemblyName) {
+		Connection c = null;
+        try {
+            c = getConnection();
+            EasyResultSet rs=null;
+            EasyStatement selecta = new EasyStatement(c, "select max(version) from DEPLOY_ASSEMBLIES WHERE assembly='"+ assemblyName+"''");            
+            try {
+            	selecta.write(assemblyName);                
+                rs=selecta.executeQuery();
+                while (rs.next()) {
+                    return rs.readInt();                 
+                }
+                
+                
+            } finally {
+            	if(rs!=null) rs.close();
+            	selecta.close();
+            	
+            }
+        } catch (SQLException e) {
+            throw new PersistenceException(e);
+        } finally {
+            close(c);
+        }
+        return -1;
+	}
 }

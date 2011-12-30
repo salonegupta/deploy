@@ -112,4 +112,23 @@ public class RemoteComponentManager implements ComponentManager {
 	public void retired(ComponentId name, File path, List<String> deployedResources) {
 		getComponentManager().retired(name, path, deployedResources);
 	}
+
+
+	public void activateProcess(ComponentId name, File path,
+			List<String> deployedResources, String pipaFormUrl) {
+		getComponentManager().activateProcess(name, path, deployedResources,pipaFormUrl);
+		
+	}
+
+	public void retireProcess(ComponentId name, File path,
+			List<String> deployedResources, String pipaFormUrl) {
+		getComponentManager().retireProcess(name, path, deployedResources,pipaFormUrl);
+		
+	}
+
+	public void undeploy(ComponentId componentId, File file,
+			List<String> deployedResources, boolean active) {
+		getComponentManager().undeploy(componentId, file, deployedResources, active);
+		
+	}
 }

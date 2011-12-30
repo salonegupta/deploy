@@ -58,6 +58,7 @@ public class DeployWSConstants {
     
     public static final QName DEPLOY_RESULT = new QName(DEPLOY_NS.getNamespaceURI(), "deployResult", DEPLOY_NS_PREFIX);
     public static final QName ASSEMBLY_VERSION = new QName(DEPLOY_NS.getNamespaceURI(), "assemblyVersion", DEPLOY_NS_PREFIX);
+    public static final QName PROCESS_NAME = new QName(DEPLOY_NS.getNamespaceURI(), "processName", DEPLOY_NS_PREFIX);
     public static final QName SUCCESS = new QName(DEPLOY_NS.getNamespaceURI(), "success", DEPLOY_NS_PREFIX);
     public static final QName MESSAGES = new QName(DEPLOY_NS.getNamespaceURI(), "messages", DEPLOY_NS_PREFIX);
     
@@ -79,6 +80,8 @@ public class DeployWSConstants {
     
     public static final QName GET_DEPLOYED_ASSEMBLIES_REQUEST = new QName(DEPLOY_NS.getNamespaceURI(), "getDeployedAssemblies", DEPLOY_NS_PREFIX);
     public static final QName GET_DEPLOYED_ASSEMBLIES_RESPONSE = new QName(DEPLOY_NS.getNamespaceURI(), "getDeployedAssembliesResponse", DEPLOY_NS_PREFIX);
+    public static final QName GET_DEPLOYED_ASSEMBLY_REQUEST = new QName(DEPLOY_NS.getNamespaceURI(), "getAssemblyVersion", DEPLOY_NS_PREFIX);
+    public static final QName GET_DEPLOYED_ASSEMBLY_RESPONSE = new QName(DEPLOY_NS.getNamespaceURI(), "getAssemblyVersionResponse", DEPLOY_NS_PREFIX);
     public static final QName ASSEMBLY_DIR = new QName(DEPLOY_NS.getNamespaceURI(), "assemblyDir", DEPLOY_NS_PREFIX);
     public static final QName DEPLOYED_ASSEMBLIES = new QName(DEPLOY_NS.getNamespaceURI(), "deployedAssemblies", DEPLOY_NS_PREFIX);
     public static final QName DEPLOYED_ASSEMBLY = new QName(DEPLOY_NS.getNamespaceURI(), "deployedAssembly", DEPLOY_NS_PREFIX);
@@ -89,6 +92,8 @@ public class DeployWSConstants {
     public static final QName COMPONENT_NAME = new QName(DEPLOY_NS.getNamespaceURI(), "componentName", DEPLOY_NS_PREFIX);
 
     /* Activate Request */
-    public static final QName ACTIVATE_REQUEST = new QName(DEPLOY_NS.getNamespaceURI(), "activateAssembly", DEPLOY_NS_PREFIX);
-    public static final QName DEACTIVATE_REQUEST = new QName(DEPLOY_NS.getNamespaceURI(), "deactivateAssembly", DEPLOY_NS_PREFIX);
+    public static final QName ACTIVATE_REQUEST = new QName(DEPLOY_NS.getNamespaceURI(), "activate", DEPLOY_NS_PREFIX);
+    public static final QName DEACTIVATE_REQUEST = new QName(DEPLOY_NS.getNamespaceURI(), "retireAssembly", DEPLOY_NS_PREFIX);
+    public static final QName DEACTIVATE_PROCESS_REQUEST = new QName(DEPLOY_NS.getNamespaceURI(), "retireProcess", DEPLOY_NS_PREFIX);
+    public static final QName ACTIVATE_PROCESS_REQUEST = new QName(DEPLOY_NS.getNamespaceURI(), "activateProcess", DEPLOY_NS_PREFIX);
 }

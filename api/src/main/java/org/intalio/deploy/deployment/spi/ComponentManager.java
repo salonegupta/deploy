@@ -138,7 +138,7 @@ public interface ComponentManager extends Remote {
      * @param name Component identifier
      * @param path Component root directory
      * @param deployedResources resources that were deployed by the component manager for this component
-     */
+     */   
     void undeploy(ComponentId name, File path, List<String> deployedResources);
 
     /**
@@ -161,7 +161,17 @@ public interface ComponentManager extends Remote {
      * @param path Component root directory
      * @param deployedResources resources that were deployed by the component manager for this component
      */
-    void retire(ComponentId name, File path, List<String> deployedResources);
+    void retire(ComponentId name, File path, List<String> deployedResources);   
+    
+    /**
+     * Retires the version of the component specified in the given ComponentId. It does nothing if the given version
+     * is already retired.
+     *
+     * @param name Component identifier
+     * @param path Component root directory
+     * @param deployedResources resources that were deployed by the component manager for this component
+     */
+    void retireProcess(ComponentId name, File path, List<String> deployedResources,String pipaFormUrl);
     
     /**
      * Notification of deployed component.
@@ -207,4 +217,8 @@ public interface ComponentManager extends Remote {
      * @param deployedResources resources that were deployed by the component manager for this component
      */
     void retired(ComponentId name, File path, List<String> deployedResources);
+
+	public void activateProcess(ComponentId name, File path, List<String> deployedResources, String pipaFormUrl);
+
+	public void undeploy(ComponentId componentId, File file,List<String> deployedResources, boolean active);
 }

@@ -16,6 +16,7 @@ import static org.intalio.deploy.deployment.ws.DeployWSConstants.ACTIVATE;
 import static org.intalio.deploy.deployment.ws.DeployWSConstants.ASSEMBLY_NAME;
 import static org.intalio.deploy.deployment.ws.DeployWSConstants.ASSEMBLY_VERSION;
 import static org.intalio.deploy.deployment.ws.DeployWSConstants.ZIP;
+import static org.intalio.deploy.deployment.ws.DeployWSConstants.PROCESS_NAME;
 
 import java.io.File;
 import java.io.InputStream;
@@ -198,6 +199,18 @@ public class DeployWS {
         DeploymentResult result = _deployService.activate(aid);
         return OMParser.marshallDeploymentResult(result);
     }
+    
+    public OMElement activateProcess(OMElement requestEl) throws AxisFault {
+        checkInitialized();
+        OMParser request = new OMParser(requestEl);
+        String assemblyName = request.getRequiredString(ASSEMBLY_NAME);
+        int assemblyVersion = request.getRequiredInt(ASSEMBLY_VERSION);
+        AssemblyId aid = new AssemblyId(assemblyName, assemblyVersion);
+        String processName = request.getRequiredString(PROCESS_NAME);
+        DeploymentResult result = _deployService.activateProcess(aid, processName);
+        return OMParser.marshallDeploymentResult(result);
+    }
+
 
     public OMElement retire(OMElement requestEl) throws AxisFault {
         checkInitialized();
@@ -205,6 +218,27 @@ public class DeployWS {
         String assemblyName = request.getRequiredString(ASSEMBLY_NAME);
         AssemblyId aid = new AssemblyId(assemblyName);
         DeploymentResult result = _deployService.retire(aid);
+        return OMParser.marshallDeploymentResult(result);
+    }
+    
+    public OMElement retireAssembly(OMElement requestEl) throws AxisFault {
+        checkInitialized();
+        OMParser request = new OMParser(requestEl);
+        String assemblyName = request.getRequiredString(ASSEMBLY_NAME);
+        int assemblyVersion = request.getRequiredInt(ASSEMBLY_VERSION);
+        AssemblyId aid = new AssemblyId(assemblyName,assemblyVersion);
+        DeploymentResult result = _deployService.retireAssembly(aid);
+        return OMParser.marshallDeploymentResult(result);
+    }
+    
+    public OMElement retireProcess(OMElement requestEl) throws AxisFault {
+        checkInitialized();
+        OMParser request = new OMParser(requestEl);
+        String assemblyName = request.getRequiredString(ASSEMBLY_NAME);
+        int assemblyVersion = request.getRequiredInt(ASSEMBLY_VERSION);
+        String processName = request.getRequiredString(PROCESS_NAME);
+        AssemblyId aid = new AssemblyId(assemblyName,assemblyVersion);
+        DeploymentResult result = _deployService.retireProcess(aid,processName);
         return OMParser.marshallDeploymentResult(result);
     }
 

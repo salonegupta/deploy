@@ -15,9 +15,9 @@ import static org.intalio.deploy.deployment.impl.LocalizedMessages._;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.FileWriter;
 import java.rmi.Remote;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,9 +55,8 @@ import org.intalio.deploy.deployment.impl.clustering.UndeployedMessage;
 import org.intalio.deploy.deployment.spi.ComponentManager;
 import org.intalio.deploy.deployment.spi.ComponentManagerLockAware;
 import org.intalio.deploy.deployment.spi.ComponentManagerResult;
-import org.intalio.deploy.deployment.spi.DeploymentServiceCallback;    
+import org.intalio.deploy.deployment.spi.DeploymentServiceCallback;
 import org.intalio.deploy.registry.RemoteProxy;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
@@ -600,6 +599,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         try {
             writeLockDeploy();
             try {
+            	
                 return undeployAssembly(assembly);
             } finally {
                 try {
@@ -742,6 +742,20 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         	writeUnlockDeploy();
         }
     }
+    
+    /**
+     * Obtain the latest version of a given assembly
+     */
+    public DeploymentResult getAssemblyVersion(String assemblyName) {
+        
+        
+    	int assemblyVersion= _persist.getAssemblyVersion(assemblyName);
+    	TemporaryResult result = new TemporaryResult(new AssemblyId(assemblyName,assemblyVersion));
+    	
+        return result.finalResult(); 
+        
+    }
+
 
     public Collection<DeployedAssembly> readDeployedAssemblies() {
         List<DeployedAssembly> assemblies = new ArrayList<DeployedAssembly>();
@@ -781,18 +795,21 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         	writeLockDeploy();
             try {
                 // undeploy all components
-                for (DeployedComponent dc : assembly.getDeployedComponents()) {
-                    try {
-                        ComponentManager manager = getComponentManager(dc.getComponentManagerName());
-                        manager.undeploy(dc.getComponentId(), new File(dc.getComponentDir()), dc.getDeployedResources());
-                        
-                        _deployMBeanServer.unregisterComponent(dc.getComponentManagerName(), dc.getComponentId());
-                    } catch (Exception except) {
-                        String msg = _("Exception while undeploying component {0}: {1}", dc.getComponentId(), except.getLocalizedMessage());
-                        result.add(dc, error(msg));
-                        LOG.error(msg, except);
-                    }
-                }
+            	
+	                for (DeployedComponent dc : assembly.getDeployedComponents()) {
+	                    try {
+	                        ComponentManager manager = getComponentManager(dc.getComponentManagerName());
+	                        
+	                        manager.undeploy(dc.getComponentId(), new File(dc.getComponentDir()), dc.getDeployedResources(),assembly.isActive());
+	                        
+	                        _deployMBeanServer.unregisterComponent(dc.getComponentManagerName(), dc.getComponentId());
+	                    } catch (Exception except) {
+	                        String msg = _("Exception while undeploying component {0}: {1}", dc.getComponentId(), except.getLocalizedMessage());
+	                        result.add(dc, error(msg));
+	                        LOG.error(msg, except);
+	                    }
+	            
+            	}
             } catch (Exception except) {
                 String msg = _("Exception while undeploying assembly {0}: {1} ", aid, except.getLocalizedMessage());
                 result.add(null, null, error(msg));
@@ -1002,6 +1019,10 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         TemporaryResult results = new TemporaryResult(assemblyId);
         
         DeployedAssembly assembly = loadAssemblyState(assemblyId);
+        DeployedAssembly assemblyFromDatabase = _persist.load().get(assemblyId);
+        if( assemblyFromDatabase != null ) {
+            assembly = assemblyFromDatabase;
+        }
         for (DeployedComponent dc : assembly.getDeployedComponents()) {
             ComponentManager manager = getComponentManager(dc.getComponentManagerName());
             try {
@@ -1017,6 +1038,38 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         cluster.sendMessage(new ActivatedMessage(assembly));
         
         return results.finalResult(); 
+    }
+    
+    /**
+     * Activates the process of the assembly specified by the given assembly id. 
+     *
+     */    
+    public DeploymentResult activateProcess(AssemblyId assemblyId, String processName) {
+     TemporaryResult results = new TemporaryResult(assemblyId);
+        
+        DeployedAssembly assembly = loadAssemblyState(assemblyId);
+        DeployedAssembly assemblyFromDatabase = _persist.load().get(assemblyId);
+        if( assemblyFromDatabase != null ) {
+            assembly = assemblyFromDatabase;
+        }
+        String pipaFormUrl=_persist.fetchPIPAUrl(assemblyId, processName);
+        for (DeployedComponent dc : assembly.getDeployedComponents()) {
+            ComponentManager manager = getComponentManager(dc.getComponentManagerName());
+            try {
+                LOG.debug(_("Activate component {0}", dc));
+                manager.activateProcess(dc.getComponentId(), new File(dc.getComponentDir()), dc.getDeployedResources(),pipaFormUrl);
+            } catch (Exception except) {
+                String msg = _("Error while activating component {0}: {1}", dc.getComponentId(), except);
+                results.add(dc.getComponentId(), dc.getComponentManagerName(), new DeploymentMessage(Level.ERROR, msg));
+                LOG.error(msg, except);
+            }
+        }
+        _persist.activate(assemblyId.getAssemblyName(), assemblyId.getAssemblyVersion());
+        cluster.sendMessage(new ActivatedMessage(assembly));
+        
+        return results.finalResult(); 	
+    	
+    	
     }
 
     /**
@@ -1054,6 +1107,73 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         }
 
         return results.finalResult(); 
+    }
+    
+    /**
+     * Retires the version of the assembly specified by the given assembly id. This method does nothing if the 
+     * given version is already retired.
+     *
+     */    
+    public DeploymentResult retireAssembly(AssemblyId assemblyId) {
+        TemporaryResult results = new TemporaryResult(assemblyId);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Retiring Assembly : name=" + assemblyId.getAssemblyName() +" version="+ assemblyId.getAssemblyVersion());
+        }
+        Collection<DeployedAssembly> assembliesToRetire = new ArrayList<DeployedAssembly>();
+        DeployedAssembly assembly = loadAssemblyState(assemblyId);                
+        DeployedAssembly assemblyFromDatabase = _persist.load().get(assemblyId);
+        if( assemblyFromDatabase != null ) {
+            assembly = assemblyFromDatabase;
+        }
+        if(assembly.isActive()){
+        	assembliesToRetire.add(assembly);
+            for (DeployedComponent dc : assembly.getDeployedComponents()) {
+                ComponentManager manager = getComponentManager(dc.getComponentManagerName());
+                try {
+                    LOG.debug(_("Retire component {0}", dc));
+                    manager.retire(dc.getComponentId(), new File(dc.getComponentDir()), dc.getDeployedResources());
+                } catch (Exception except) {
+                    String msg = _("Error while retiring component {0}: {1}", dc.getComponentId(), except);
+                    results.add(dc.getComponentId(), dc.getComponentManagerName(), new DeploymentMessage(Level.ERROR, msg));
+                    LOG.error(msg, except);
+                }
+            }
+        }
+
+        _persist.retireAssembly(assemblyId);
+        for( DeployedAssembly depployedAssembly : assembliesToRetire ) {
+            cluster.sendMessage(new RetiredMessage(depployedAssembly));
+        }
+
+        return results.finalResult(); 
+    }
+    
+    /**
+     * Retires the process of the assembly specified by the given assembly id. 
+     *
+     */    
+    public DeploymentResult retireProcess(AssemblyId assemblyId, String processName) {
+    	  TemporaryResult results = new TemporaryResult(assemblyId);
+          
+          DeployedAssembly assembly = loadAssemblyState(assemblyId);
+          DeployedAssembly assemblyFromDatabase = _persist.load().get(assemblyId);
+          if( assemblyFromDatabase != null ) {
+              assembly = assemblyFromDatabase;
+          }
+          String pipaFormUrl=_persist.fetchPIPAUrl(assemblyId, processName);
+          for (DeployedComponent dc : assembly.getDeployedComponents()) {
+              ComponentManager manager = getComponentManager(dc.getComponentManagerName());
+              try {
+                  LOG.debug(_("Retire component {0}", dc));
+                  manager.retireProcess(dc.getComponentId(), new File(dc.getComponentDir()), dc.getDeployedResources(),pipaFormUrl);
+              } catch (Exception except) {
+                  String msg = _("Error while retiring component {0}: {1}", dc.getComponentId(), except);
+                  results.add(dc.getComponentId(), dc.getComponentManagerName(), new DeploymentMessage(Level.ERROR, msg));
+                  LOG.error(msg, except);
+              }
+          }   
+          cluster.sendMessage(new RetiredMessage(assembly));
+          return results.finalResult(); 	
     }
 
     private void checkRequiredComponentManagersAvailable() {
@@ -1512,6 +1632,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         missing.removeAll(_componentManagers.keySet());
         return String.valueOf(missing);
     }
+
+
 }
 
 /**

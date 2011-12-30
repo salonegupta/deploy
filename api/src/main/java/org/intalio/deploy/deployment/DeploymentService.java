@@ -53,10 +53,30 @@ public interface DeploymentService extends Remote {
     DeploymentResult activate(AssemblyId assemblyId) throws RemoteException;
     
     /**
+     * Retires all revisions for the assembly. The version number inside the
+     * AssemblyId is ignored.
+     */    
+    DeploymentResult retire(AssemblyId assemblyId) throws RemoteException;
+    
+    /**
      * Retires the version of the assembly specified by the given assembly id. This method does nothing if the 
      * given version is already retired.
      * 
      * @param name
-     */
-    DeploymentResult retire(AssemblyId assemblyId) throws RemoteException;
+     */    
+    public DeploymentResult retireAssembly(AssemblyId assemblyId) throws RemoteException;
+    
+    /**
+     * Retires the process of the assembly specified by the given assembly id. 
+     *
+     */    
+    public DeploymentResult retireProcess(AssemblyId assemblyId , String processName) throws RemoteException;
+    
+    /**
+     * Activates the process of the assembly specified by the given assembly id. 
+     *
+     */    
+    public DeploymentResult activateProcess(AssemblyId assemblyId , String processName) throws RemoteException;
+    
+    public DeploymentResult getAssemblyVersion(String assemblyName) throws RemoteException;
 }

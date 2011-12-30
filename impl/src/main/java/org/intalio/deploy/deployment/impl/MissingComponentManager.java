@@ -77,7 +77,7 @@ class MissingComponentManager implements ComponentManager {
         return new ComponentManagerResult(message(error(msg)));
 	}
 
-	public void retire(ComponentId cid, File path, List<String> deployedResources) {
+	public void retireAssembly(ComponentId cid, File path, List<String> deployedResources) {
         LOG.warn(_("Missing component manager: retire {0}", cid));
 	}
 
@@ -87,5 +87,32 @@ class MissingComponentManager implements ComponentManager {
 
 	public void retired(ComponentId cid, File path, List<String> deployedResources) {
         LOG.warn(_("Missing component manager: retired {0}", cid));
+	}
+
+	public void activateProcess(ComponentId componentId, File file,
+			List<String> deployedResources,String pipaFormUrl) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	
+	public void retire(ComponentId name, File path,
+			List<String> deployedResources) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	
+	public void undeploy(ComponentId componentId, File file,
+			List<String> deployedResources, boolean active) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	public void retireProcess(ComponentId name, File path,
+			List<String> deployedResources, String pipaFormUrl) {
+		// TODO Auto-generated method stub
+		
 	}
 }
