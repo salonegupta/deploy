@@ -1087,6 +1087,12 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             if( id.getAssemblyName().equals(assemblyId.getAssemblyName()) 
                     && assembliesById.get(id).isActive() ) {
                 DeployedAssembly assembly = loadAssemblyState(id);
+                // Fix for WF-1450 
+                DeployedAssembly assemblyFromDatabase = _persist.load().get(id);
+                if( assemblyFromDatabase != null ) {
+                    assembly = assemblyFromDatabase;
+                }
+                // End WF-1450
                 assembliesToRetire.add(assembly);
                 for (DeployedComponent dc : assembly.getDeployedComponents()) {
                     ComponentManager manager = getComponentManager(dc.getComponentManagerName());
