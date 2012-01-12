@@ -103,10 +103,12 @@ public class MockComponentManager implements ComponentManager {
     }
 
 	public void activate(ComponentId name, File path, List<String> deployedResources) {
+		_components.put(name, new Component(name, path));
         if (_failActivate) throw new RuntimeException("Activate force-failed");
 	}
 
 	public void retire(ComponentId name, File path, List<String> deployedResources) {
+		_components.remove(name);
         if (_failRetire) throw new RuntimeException("Retire force-failed");
 	}
 
@@ -128,6 +130,11 @@ public class MockComponentManager implements ComponentManager {
         return c._activated;
     }
     
+    public boolean isRetired(ComponentId name) {
+        return  _components.containsKey(name);
+        
+    }
+    
     class Component {
         ComponentId _name;
         File _path;
@@ -140,28 +147,23 @@ public class MockComponentManager implements ComponentManager {
         }
     }
 
-	@Override
+
 	public void activateProcess(ComponentId name, File path,
 			List<String> deployedResources, String pipaFormUrl) {
-		// TODO Auto-generated method stub
+		_components.put(name, new Component(name, path));
 		
 	}
 
-	@Override
-	public void retireAssembly(ComponentId name, File path,
-			List<String> deployedResources) {
-		// TODO Auto-generated method stub
-		
-	}
 
-	@Override
+
+
 	public void retireProcess(ComponentId name, File path,
 			List<String> deployedResources, String pipaFormUrl) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
+
 	public void undeploy(ComponentId componentId, File file,
 			List<String> deployedResources, boolean active) {
 		// TODO Auto-generated method stub

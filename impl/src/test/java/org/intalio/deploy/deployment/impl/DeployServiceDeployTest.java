@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;
+import java.util.Iterator;
 
 import javax.sql.DataSource;
 
@@ -24,10 +25,8 @@ import junit.framework.TestCase;
 import org.apache.log4j.PropertyConfigurator;
 import org.intalio.deploy.deployment.AssemblyId;
 import org.intalio.deploy.deployment.ComponentId;
+import org.intalio.deploy.deployment.DeployedAssembly;
 import org.intalio.deploy.deployment.DeploymentResult;
-import org.intalio.deploy.deployment.impl.DeploymentServiceImpl;
-import org.intalio.deploy.deployment.impl.EasyStatement;
-import org.intalio.deploy.deployment.impl.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.xml.XmlBeanFactory;
@@ -439,6 +438,105 @@ public class DeployServiceDeployTest extends TestCase {
         wait(5);
         assertEquals(1, service.getDeployedAssemblies().size());
     }
+    
+    public void testActivate() throws Exception {
+        start();
+        
+        File assemblyDir = TestUtils.getAssemblyDir("assembly1");
+        DeploymentResult result = service.deployExplodedAssembly(assemblyDir, false);
+        assertTrue(result.isSuccessful());
+        assertEquals("assembly1", result.getAssemblyId().getAssemblyName());
+        assertEquals(AssemblyId.NO_VERSION, result.getAssemblyId().getAssemblyVersion());
+        assertEquals(0, result.getMessages().size());
+        assertEquals(1, service.getDeployedAssemblies().size());        
+        assertTrue(manager.isDeployed(new ComponentId(result.getAssemblyId(), "component1")));
+        
+        service.activate(result.getAssemblyId());
+        Iterator<DeployedAssembly> it= service.getDeployedAssemblies().iterator();
+        while(it.hasNext()){
+        	DeployedAssembly assembly=it.next();
+        	if("assembly1".equals(assembly.getAssemblyId().getAssemblyName()) && AssemblyId.NO_VERSION== result.getAssemblyId().getAssemblyVersion() ){
+        		assertTrue(assembly.isActive());
+        	}
+        	
+        }
+        assertFalse(manager.isActivated(new ComponentId(result.getAssemblyId(), "component1")));
+        
+    }
+    
+
+    public void testActivateProcess() throws Exception {
+        start();
+        
+        File assemblyDir = TestUtils.getAssemblyDir("assembly1");
+        DeploymentResult result = service.deployExplodedAssembly(assemblyDir, false);
+        assertTrue(result.isSuccessful());
+        assertEquals("assembly1", result.getAssemblyId().getAssemblyName());
+        assertEquals(AssemblyId.NO_VERSION, result.getAssemblyId().getAssemblyVersion());
+        assertEquals(0, result.getMessages().size());
+        assertEquals(1, service.getDeployedAssemblies().size());        
+        assertTrue(manager.isDeployed(new ComponentId(result.getAssemblyId(), "component1")));
+        
+        service.activateProcess(result.getAssemblyId(),"assembly1");
+        Iterator<DeployedAssembly> it= service.getDeployedAssemblies().iterator();
+        while(it.hasNext()){
+        	DeployedAssembly assembly=it.next();
+        	if("assembly1".equals(assembly.getAssemblyId().getAssemblyName()) && AssemblyId.NO_VERSION== result.getAssemblyId().getAssemblyVersion() ){
+        		assertTrue(assembly.isActive());
+        	}
+        	
+        }
+        assertFalse(manager.isActivated(new ComponentId(result.getAssemblyId(), "component1")));
+        
+    }
+    
+    public void testRetireAssembly() throws Exception {
+        start();
+        
+        File assemblyDir = TestUtils.getAssemblyDir("assembly1");
+        DeploymentResult result = service.deployExplodedAssembly(assemblyDir, false);
+        assertTrue(result.isSuccessful());
+        assertEquals("assembly1", result.getAssemblyId().getAssemblyName());
+        assertEquals(AssemblyId.NO_VERSION, result.getAssemblyId().getAssemblyVersion());
+        assertEquals(0, result.getMessages().size());
+        assertEquals(1, service.getDeployedAssemblies().size());        
+        assertTrue(manager.isDeployed(new ComponentId(result.getAssemblyId(), "component1")));
+        
+        
+        service.retireAssembly(result.getAssemblyId());
+        Iterator<DeployedAssembly> it= service.getDeployedAssemblies().iterator();
+        while(it.hasNext()){
+        	DeployedAssembly assembly=it.next();
+        	if("assembly1".equals(assembly.getAssemblyId().getAssemblyName()) && AssemblyId.NO_VERSION== result.getAssemblyId().getAssemblyVersion() ){
+        		assertFalse(assembly.isActive());
+        	}
+        	
+        }
+        assertFalse(manager.isRetired(new ComponentId(result.getAssemblyId(), "component1")));
+        
+    }
+        
+    public void testRetireProcess() throws Exception {
+        start();
+        
+        File assemblyDir = TestUtils.getAssemblyDir("assembly1");
+        DeploymentResult result = service.deployExplodedAssembly(assemblyDir, false);
+        assertTrue(result.isSuccessful());
+        assertEquals("assembly1", result.getAssemblyId().getAssemblyName());
+        assertEquals(AssemblyId.NO_VERSION, result.getAssemblyId().getAssemblyVersion());
+        assertEquals(0, result.getMessages().size());
+        assertEquals(1, service.getDeployedAssemblies().size());        
+        assertTrue(manager.isDeployed(new ComponentId(result.getAssemblyId(), "component1")));
+        
+        try{
+        service.retireProcess(result.getAssemblyId(),"AJAXMatrix");
+        }catch(Exception e){
+        	fail("Error while retiring process");        	
+        }
+
+        
+    }
+
 
     void wait(int seconds) {
         try {
