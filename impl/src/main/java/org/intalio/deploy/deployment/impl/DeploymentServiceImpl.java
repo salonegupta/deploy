@@ -466,19 +466,23 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             try {
                 _persist.startTransaction();
 
+                // Fix for BPMS-866 : Moved the below code down so that it will run only when it deploys successfully.
+                
                 /* The protocol has been changed after discussion with Alex.
                  * We now de-activate active versions when the the 'activate' is set to true.
                  * To have multiple active version for a new component manager,
                  * 1. deploy a version with the activate set to false
                  * 2. call active() on the new version
                  */
-                try { 
-                    if( activate ) {
-                        retire(aid);
-                    }
-                } catch(Exception e) {
-                    LOG.warn("Exeption during retiring old versions to activate the new one:", e);
-                }
+//                try { 
+//                    if( activate ) {
+//                        retire(aid);
+//                    }
+//                } catch(Exception e) {
+//                    LOG.warn("Exeption during retiring old versions to activate the new one:", e);
+//                }
+                
+                //*************************** Fix for BPMS-866 **************************************************
 
                 try {
                     File[] files = assemblyDir.listFiles();
@@ -530,6 +534,21 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 }
 
                 if (results.isSuccessful()) {
+                	
+                	/* The protocol has been changed after discussion with Alex.
+                     * We now de-activate active versions when the the 'activate' is set to true.
+                     * To have multiple active version for a new component manager,
+                     * 1. deploy a version with the activate set to false
+                     * 2. call active() on the new version
+                     */
+                    try { 
+                        if( activate ) {
+                            retire(aid);
+                        }
+                    } catch(Exception e) {
+                        LOG.warn("Exeption during retiring old versions to activate the new one:", e);
+                    }
+                    
                     // update persistent state
                     DeployedAssembly assembly = loadAssemblyState(aid);
                     
@@ -547,8 +566,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                     // in case of failure, we undeploy already deployed components
                     for (DeployedComponent dc : deployed) {
                         try {
-                            ComponentManager manager = getComponentManager(dc.getComponentManagerName());
-                            manager.undeploy(dc.getComponentId(), new File(dc.getComponentDir()), dc.getDeployedResources());
+                            ComponentManager manager = getComponentManager(dc.getComponentManagerName());                            
+                            manager.undeploy(dc.getComponentId(), new File(dc.getComponentDir()), dc.getDeployedResources(),false);
                         } catch (Exception except) {
                             String msg = _("Exception while undeploying component {0} after failed deployment: {1}", dc.getComponentId(),
                                     except.getLocalizedMessage());
