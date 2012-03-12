@@ -33,6 +33,7 @@ import org.intalio.deploy.deployment.AssemblyId;
 import org.intalio.deploy.deployment.DeployedAssembly;
 import org.intalio.deploy.deployment.DeploymentResult;
 import org.intalio.deploy.deployment.DeploymentService;
+import org.intalio.deploy.deployment.ws.OMParser;
 
 /**
  * Client web services API for the Token Service.
