@@ -1126,15 +1126,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         if (_deployDir.contains("${"))
             throw new IllegalStateException("Invalid deployment directory: " + _deployDir);
         File dir = new File(_deployDir);
-        if (dir.exists() && !dir.isDirectory()) {
-            throw new RuntimeException("Deployment path exists but is not a directory: " + _deployDir);
-        }
-        if (!dir.exists()) {
-            LOG.debug("Creating deployment directory: " + _deployDir);
-            boolean created = dir.mkdirs();
-            if (!created) {
-                throw new RuntimeException("Unable to create deployment directory: " + _deployDir);
-            }
+        if (!dir.exists() || !dir.isDirectory()) {
+            throw new RuntimeException("Deployment directory does not exists or it is not a directory: " + _deployDir);
         }
     }
 
