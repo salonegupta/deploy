@@ -198,7 +198,6 @@ public class Persistence {
             close(c);
         }
     }
-
     /**
      * Load persistent deployed state
      */
@@ -206,12 +205,12 @@ public class Persistence {
         Map<AssemblyId, DeployedAssembly> assembliesById = new HashMap<AssemblyId, DeployedAssembly>();
         Map<TypedComponentId, List<String>> resourceListsByComponentId = new HashMap<TypedComponentId, List<String>>();
         Connection c = null;
+        EasyResultSet rs=null;
         try {
-            c = getConnection();
-
+            c = getConnection();            
             EasyStatement selecta = new EasyStatement(c, "SELECT * FROM DEPLOY_ASSEMBLIES");
             try {
-                EasyResultSet rs = selecta.executeQuery();
+                rs = selecta.executeQuery();
                 while (rs.next()) {
                     String assembly = rs.readString();
                     int version = rs.readInt();
@@ -223,12 +222,13 @@ public class Persistence {
                     assembliesById.put(aid, da);
                 }
             } finally {
+            	if(rs!=null) rs.close();
                 selecta.close();
             }
 
             EasyStatement selectb = new EasyStatement(c, "SELECT * FROM DEPLOY_RESOURCES");
             try {
-                EasyResultSet rs = selectb.executeQuery();
+                rs = selectb.executeQuery();
                 while (rs.next()) {
                     String assembly = rs.readString();
                     int version = rs.readInt();
@@ -245,12 +245,13 @@ public class Persistence {
                 	deployedResource.add(resource);
                 }
             } finally {
+            	if(rs!=null) rs.close();
                 selectb.close();
             }
 
             EasyStatement selectc = new EasyStatement(c, "SELECT * FROM DEPLOY_COMPONENTS");
             try {
-                EasyResultSet rs = selectc.executeQuery();
+                rs = selectc.executeQuery();
                 while (rs.next()) {
                     String assembly = rs.readString();
                     int version = rs.readInt();
@@ -273,9 +274,9 @@ public class Persistence {
                         
                         if( LOG.isDebugEnabled() ) LOG.debug("DEPLOYMENT.component discovered: " + dc + ", resources = " + dc.getDeployedResources());
                     }
-                }
-                rs.close();
+                }                
             } finally {
+            	if(rs!=null) rs.close();
                 selectc.close();
             }
             return assembliesById;
