@@ -198,6 +198,57 @@ public class Persistence {
             close(c);
         }
     }
+    
+    /**
+     * Retire *any* currently active version of the current assembly
+     */
+    void retireAssembly(AssemblyId assemblyId) throws PersistenceException {
+        Connection c = null;
+        try {
+            c = getConnection();
+            EasyStatement inserta = new EasyStatement(c, "UPDATE DEPLOY_ASSEMBLIES SET CACTIVE = 0 WHERE ASSEMBLY = ? AND VERSION = ?");
+            try {
+                inserta.write(assemblyId.getAssemblyName());
+                inserta.write(assemblyId.getAssemblyVersion());
+                inserta.execute();
+            } finally {
+                inserta.close();
+            }
+        } catch (SQLException e) {
+            throw new PersistenceException(e);
+        } finally {
+            close(c);
+        }
+    }
+    
+    
+    String fetchPIPAUrl(AssemblyId assemblyId, String processName) throws PersistenceException {
+        Connection c = null;
+        try {
+            c = getConnection();
+            EasyResultSet rs=null;
+            EasyStatement selecta = new EasyStatement(c, "SELECT RESOURCE_ID from DEPLOY_RESOURCES WHERE ASSEMBLY = ? AND VERSION = ? AND MANAGER='pipa' AND RESOURCE_ID LIKE '%"+processName+"%'");            
+            try {
+            	selecta.write(assemblyId.getAssemblyName());
+                selecta.write(assemblyId.getAssemblyVersion());
+                rs=selecta.executeQuery();
+                while (rs.next()) {
+                    return rs.readString();                 
+                }
+                
+                
+            } finally {
+            	if(rs!=null) rs.close();
+            	selecta.close();
+            	
+            }
+        } catch (SQLException e) {
+            throw new PersistenceException(e);
+        } finally {
+            close(c);
+        }
+        return null;
+    }
 
     /**
      * Load persistent deployed state
@@ -206,12 +257,12 @@ public class Persistence {
         Map<AssemblyId, DeployedAssembly> assembliesById = new HashMap<AssemblyId, DeployedAssembly>();
         Map<TypedComponentId, List<String>> resourceListsByComponentId = new HashMap<TypedComponentId, List<String>>();
         Connection c = null;
+        EasyResultSet rs=null;
         try {
-            c = getConnection();
-
+            c = getConnection();            
             EasyStatement selecta = new EasyStatement(c, "SELECT * FROM DEPLOY_ASSEMBLIES");
             try {
-                EasyResultSet rs = selecta.executeQuery();
+                rs = selecta.executeQuery();
                 while (rs.next()) {
                     String assembly = rs.readString();
                     int version = rs.readInt();
@@ -223,12 +274,13 @@ public class Persistence {
                     assembliesById.put(aid, da);
                 }
             } finally {
+            	if(rs!=null) rs.close();
                 selecta.close();
             }
 
             EasyStatement selectb = new EasyStatement(c, "SELECT * FROM DEPLOY_RESOURCES");
             try {
-                EasyResultSet rs = selectb.executeQuery();
+                rs = selectb.executeQuery();
                 while (rs.next()) {
                     String assembly = rs.readString();
                     int version = rs.readInt();
@@ -245,12 +297,13 @@ public class Persistence {
                 	deployedResource.add(resource);
                 }
             } finally {
+            	if(rs!=null) rs.close();
                 selectb.close();
             }
 
             EasyStatement selectc = new EasyStatement(c, "SELECT * FROM DEPLOY_COMPONENTS");
             try {
-                EasyResultSet rs = selectc.executeQuery();
+                rs = selectc.executeQuery();
                 while (rs.next()) {
                     String assembly = rs.readString();
                     int version = rs.readInt();
@@ -273,9 +326,9 @@ public class Persistence {
                         
                         if( LOG.isDebugEnabled() ) LOG.debug("DEPLOYMENT.component discovered: " + dc + ", resources = " + dc.getDeployedResources());
                     }
-                }
-                rs.close();
+                }                
             } finally {
+            	if(rs!=null) rs.close();
                 selectc.close();
             }
             return assembliesById;
@@ -418,4 +471,32 @@ public class Persistence {
             return super.toString() + "." + _componentType;
         }
     }
+
+
+	public int getAssemblyVersion(String assemblyName) {
+		Connection c = null;
+        try {
+            c = getConnection();
+            EasyResultSet rs=null;
+            EasyStatement selecta = new EasyStatement(c, "select max(version) from DEPLOY_ASSEMBLIES WHERE assembly='"+ assemblyName+"''");            
+            try {
+            	selecta.write(assemblyName);                
+                rs=selecta.executeQuery();
+                while (rs.next()) {
+                    return rs.readInt();                 
+                }
+                
+                
+            } finally {
+            	if(rs!=null) rs.close();
+            	selecta.close();
+            	
+            }
+        } catch (SQLException e) {
+            throw new PersistenceException(e);
+        } finally {
+            close(c);
+        }
+        return -1;
+	}
 }

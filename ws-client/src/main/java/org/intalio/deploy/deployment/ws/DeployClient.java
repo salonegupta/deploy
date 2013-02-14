@@ -33,6 +33,7 @@ import org.intalio.deploy.deployment.AssemblyId;
 import org.intalio.deploy.deployment.DeployedAssembly;
 import org.intalio.deploy.deployment.DeploymentResult;
 import org.intalio.deploy.deployment.DeploymentService;
+import org.intalio.deploy.deployment.ws.OMParser;
 
 /**
  * Client web services API for the Token Service.
@@ -126,6 +127,14 @@ public class DeployClient implements DeploymentService {
         OMParser response = invoke(GET_DEPLOYED_ASSEMBLIES_REQUEST.getLocalPart(), request);
         return OMParser.parseDeployedAssemblies(response);
     }
+    
+    public DeploymentResult getAssemblyVersion(String assemblyName) throws RemoteException {
+        OMElement request = element(GET_DEPLOYED_ASSEMBLY_REQUEST);
+        setAuthentication(request);
+        request.addChild( elementText(ASSEMBLY_NAME, assemblyName) );
+        OMParser response = invoke(GET_DEPLOYED_ASSEMBLY_REQUEST.getLocalPart(), request);
+        return OMParser.parseDeploymentResult(response);
+    }
 
     public DeploymentResult undeployAssembly(AssemblyId assemblyId) throws RemoteException {
         OMElement request = element(UNDEPLOY_REQUEST);
@@ -194,9 +203,27 @@ public class DeployClient implements DeploymentService {
         OMParser response = invoke(ACTIVATE_REQUEST.getLocalPart(), request);
         return OMParser.parseDeploymentResult(response);
 	}
+	public DeploymentResult activateProcess(AssemblyId assemblyId, String processName) throws RemoteException {
+        OMElement request = element(ACTIVATE_PROCESS_REQUEST);
+        setAuthentication(request);
+        request.addChild( elementText(ASSEMBLY_NAME, assemblyId.getAssemblyName()) );
+        request.addChild( elementText(ASSEMBLY_VERSION, Integer.toString(assemblyId.getAssemblyVersion())) );
+        request.addChild( elementText(PROCESS_NAME, processName));
+        OMParser response = invoke(ACTIVATE_PROCESS_REQUEST.getLocalPart(), request);
+        return OMParser.parseDeploymentResult(response);
+	}
 
 	public DeploymentResult retire(AssemblyId assemblyId) throws RemoteException {
-        OMElement request = element(ACTIVATE_REQUEST);
+        OMElement request = element(DEACTIVATE_REQUEST);
+        setAuthentication(request);
+        request.addChild( elementText(ASSEMBLY_NAME, assemblyId.getAssemblyName()) );
+        request.addChild( elementText(ASSEMBLY_VERSION, Integer.toString(assemblyId.getAssemblyVersion())) );
+        OMParser response = invoke(DEACTIVATE_REQUEST.getLocalPart(), request);
+        return OMParser.parseDeploymentResult(response);
+	}
+	
+	public DeploymentResult retireAssembly(AssemblyId assemblyId) throws RemoteException {
+        OMElement request = element(DEACTIVATE_REQUEST);
         setAuthentication(request);
         request.addChild( elementText(ASSEMBLY_NAME, assemblyId.getAssemblyName()) );
         request.addChild( elementText(ASSEMBLY_VERSION, Integer.toString(assemblyId.getAssemblyVersion())) );
@@ -213,4 +240,16 @@ public class DeployClient implements DeploymentService {
         OMParser response = invoke(DEPLOY_REQUEST.getLocalPart(), request);
         return OMParser.parseDeploymentResult(response);
 	}
+	
+	public DeploymentResult retireProcess(AssemblyId assemblyId, String processName) throws RemoteException {
+        OMElement request = element(DEACTIVATE_PROCESS_REQUEST);
+        setAuthentication(request);
+        request.addChild( elementText(ASSEMBLY_NAME, assemblyId.getAssemblyName()) );
+        request.addChild( elementText(ASSEMBLY_VERSION, Integer.toString(assemblyId.getAssemblyVersion())) );
+        request.addChild( elementText(PROCESS_NAME, processName));
+        OMParser response = invoke(DEACTIVATE_PROCESS_REQUEST.getLocalPart(), request);
+        return OMParser.parseDeploymentResult(response);
+	}
+	
+	
 }
