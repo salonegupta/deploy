@@ -64,6 +64,8 @@ import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.util.SystemPropertyUtils;
 
+import com.intalio.bpms.common.node.heath.NodeHealth;
+
 /**
  * Deployment service
  */
@@ -77,6 +79,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     public static final String DEPLOY_COMPONENT = "DeploymentService";
     
     public static final String DEFAULT_DATASOURCE_JNDI_PATH = "java:/comp/env/jdbc/BPMSDB";
+
+    public static String DO_NOT_DELETE_FILE_NAME = "doNotDeleteFile";
     
     //
     // Configuration
@@ -637,9 +641,13 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             {
 	            File deployDir = new File(_deployDir);
                 File[] files = deployDir.listFiles();
-                if (!deployDir.exists() || files == null) {
+                //Making isDoNotDeleteFile mandatory.
+                if (!deployDir.exists() || !isDoNotDeleteFileExists(files)) {
+                    NodeHealth.setUnHealthy();
                     LOG.error("!!! FATAL ERROR !!! (Please check following error properly or Call Intalio Support for further assistance)  Deployment directory does not exists or it is not a directory: " + _deployDir);
                     return;
+                } else {
+                    NodeHealth.setHealthy();
                 }
                 
                 for (int i = 0; i < files.length; ++i) {
@@ -1126,9 +1134,22 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         if (_deployDir.contains("${"))
             throw new IllegalStateException("Invalid deployment directory: " + _deployDir);
         File dir = new File(_deployDir);
-        if (!dir.exists() || !dir.isDirectory()) {
+        //Making isDoNotDeleteFile mandatory.
+        if (!dir.exists() || !dir.isDirectory() || !isDoNotDeleteFileExists(new File(_deployDir).listFiles())) {
+            NodeHealth.setUnHealthy();
             LOG.error("!!! FATAL ERROR !!! (Please check following error properly or Call Intalio Support for further assistance)  Deployment directory does not exists or it is not a directory: " + _deployDir);
+        } else {
+            NodeHealth.setHealthy();
         }
+    }
+
+    private boolean isDoNotDeleteFileExists(File[] files) {
+        for (File file : files) {
+            if (file.getName().equals(DO_NOT_DELETE_FILE_NAME)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
