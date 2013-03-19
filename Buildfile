@@ -1,8 +1,6 @@
 require "buildr/xmlbeans"
 #require "buildr/cobertura"
-require "repositories.rb"
 require "install.rb"
-require "/build/common.rb"
 
 # Keep this structure to allow the build system to update version numbers.
 
@@ -23,6 +21,7 @@ define "deploy" do
   project.version = VERSION_NUMBER
   project.group = "org.intalio.deploy"
   
+  compile.options.source = "1.5"
   compile.options.target = "1.5"
 
   define "registry" do
@@ -81,6 +80,3 @@ define "deploy" do
     package(:aar).with :libs => [ projects("api", "impl", "ws-common"), SLF4J.values, SPRING[:core], SHOAL, APACHE_COMMONS[:dbcp], APACHE_COMMONS[:pool], APACHE_DERBY, APACHE_DERBY_NET ]
   end
 end
-
-#Delete build folder
-rm_rf "build"
