@@ -37,7 +37,7 @@ define "deploy" do
 
   desc "Deployment Service Implementation"
   define "impl" do
-    compile.with projects("api", "registry"), SECURITY.values, SERVLET_API, SHOAL, SLF4J.values, SPRING[:core]
+    compile.with projects("api", "registry"), SECURITY.values, SERVLET_API, SHOAL, SLF4J.values, SPRING[:core], BPMS_COMMON
     test.with AXIS2_LIB, APACHE_COMMONS[:dbcp], APACHE_COMMONS[:pool], LOG4J, XERCES.values, APACHE_DERBY, APACHE_DERBY_NET, APACHE_DERBY_CLIENT
     test.exclude '*TestUtils*'
     package :jar
@@ -77,6 +77,6 @@ define "deploy" do
   desc "Deployment Web-Service"
   define "ws-service" do
 #    compile.with projects("api", "ws-common"), AXIOM, AXIS2_LIB, SLF4J.values, SPRING[:core], STAX_API
-    package(:aar).with :libs => [ projects("api", "impl", "ws-common"), SLF4J.values, SPRING[:core], SHOAL, APACHE_COMMONS[:dbcp], APACHE_COMMONS[:pool], APACHE_DERBY, APACHE_DERBY_NET ]
+    package(:aar).with :libs => [ projects("api", "impl", "ws-common"), SLF4J.values, SPRING[:core], SHOAL, APACHE_COMMONS[:dbcp], APACHE_COMMONS[:pool], APACHE_DERBY, APACHE_DERBY_NET, BPMS_COMMON ]
   end
 end
