@@ -34,11 +34,17 @@ import org.intalio.deploy.deployment.DeployedAssembly;
 import org.intalio.deploy.deployment.DeploymentResult;
 import org.intalio.deploy.deployment.DeploymentService;
 import org.intalio.deploy.deployment.ws.OMParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.intalio.bpms.common.AxisUtil;
 
 /**
  * Client web services API for the Token Service.
  */
 public class DeployClient implements DeploymentService {
+
+    protected static final Logger LOG = LoggerFactory.getLogger(DeployClient.class);
 
     String _endpoint;
     String _username;
@@ -146,18 +152,33 @@ public class DeployClient implements DeploymentService {
     }
 
     protected OMParser invoke(String action, OMElement request) throws AxisFault {
-        ServiceClient serviceClient = new ServiceClient();
-        Options options = serviceClient.getOptions();
-        EndpointReference targetEPR = new EndpointReference(_endpoint);
-        options.setTo(targetEPR);
-        options.setAction(action);
-        if (_httpTimeout > 0) {
-            options.setProperty(org.apache.axis2.transport.http.HTTPConstants.SO_TIMEOUT, new Integer(_httpTimeout*1000));
+        AxisUtil util = new AxisUtil();
+        ServiceClient serviceClient = null;
+        OMElement response = null;
+        try {
+            serviceClient = util.getServiceClient();
+            Options options = util.getDefaultOptions();
+            EndpointReference targetEPR = new EndpointReference(_endpoint);
+            options.setTo(targetEPR);
+            options.setAction(action);
+            serviceClient.setOptions(options);
+            if (_httpTimeout > 0) {
+                options.setProperty(org.apache.axis2.transport.http.HTTPConstants.SO_TIMEOUT, new Integer(_httpTimeout*1000));
+            }
+            if (!_chunked) {
+                options.setProperty(org.apache.axis2.transport.http.HTTPConstants.CHUNKED, false);
+            }
+            response = serviceClient.sendReceive(request);
+        }catch(AxisFault e){
+            LOG.error("Error during invoke " , e);
         }
-        if (!_chunked) {
-            options.setProperty(org.apache.axis2.transport.http.HTTPConstants.CHUNKED, false);
+        finally {
+            try {
+                util.closeClient(serviceClient);
+            }catch (AxisFault e) {
+                LOG.error("Error while closing the Axis services " , e);
+            }
         }
-        OMElement response = serviceClient.sendReceive(request);
         return new OMParser(response);
     }
     
