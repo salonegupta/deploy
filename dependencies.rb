@@ -75,3 +75,5 @@ AXIS2 = [
 SECURITY_CLIENT = group("security-api", "security-ws-client", :under=>"org.intalio.security", :version=>"1.0.0")
 SECURITY_WS_CLIENT = group("security-api", "security-ws-common", "security-ws-client", :under=>"org.intalio.security", :version=>"1.0.0")
 WEB_NUTSNBOLTS = "org.intalio.security:security-web-nutsNbolts:jar:1.0.0"
+
+BPMS_COMMON = ["com.intalio.bpms.common:bpms-common:jar:1.1.0.003"]
