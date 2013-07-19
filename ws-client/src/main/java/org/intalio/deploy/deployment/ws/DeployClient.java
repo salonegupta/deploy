@@ -157,16 +157,14 @@ public class DeployClient implements DeploymentService {
         OMElement response = null;
         try {
             serviceClient = util.getServiceClient();
-            Options options = util.getDefaultOptions();
             EndpointReference targetEPR = new EndpointReference(_endpoint);
-            options.setTo(targetEPR);
-            options.setAction(action);
-            serviceClient.setOptions(options);
+            serviceClient.getOptions().setTo(targetEPR);
+            serviceClient.getOptions().setAction(action);
             if (_httpTimeout > 0) {
-                options.setProperty(org.apache.axis2.transport.http.HTTPConstants.SO_TIMEOUT, new Integer(_httpTimeout*1000));
+                serviceClient.getOptions().setProperty(org.apache.axis2.transport.http.HTTPConstants.SO_TIMEOUT, new Integer(_httpTimeout*1000));
             }
             if (!_chunked) {
-                options.setProperty(org.apache.axis2.transport.http.HTTPConstants.CHUNKED, false);
+                serviceClient.getOptions().setProperty(org.apache.axis2.transport.http.HTTPConstants.CHUNKED, false);
             }
             response = serviceClient.sendReceive(request);
         }catch(AxisFault e){
