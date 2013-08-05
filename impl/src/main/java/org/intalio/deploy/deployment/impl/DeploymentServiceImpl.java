@@ -622,34 +622,34 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
      * start newly deployed assemblies.
      */
     public void scan() {
-        if( !cluster.isCoordinator() ) {
+        LOG.debug(_("Scanning deployment directory {0}", _deployDir));
+
+        File deployDir = new File(_deployDir);
+        File[] files = deployDir.listFiles();
+        // Making isDoNotDeleteFile mandatory.
+        if (!deployDir.exists() || !isDoNotDeleteFileExists(files)) {
+            NodeHealth.setUnHealthy();
+            LOG.error("!!! FATAL ERROR !!! (Please check following error properly or Call Intalio Support for further assistance)  Deployment directory does not exists or it is not a directory: "
+                    + _deployDir);
+            return;
+        } else {
+            NodeHealth.setHealthy();
+        }
+
+        if (!cluster.isCoordinator()) {
             return;
         }
-        
-        
-        
-        LOG.debug(_("Scanning deployment directory {0}", _deployDir));
+
         LOG.debug(_("Component managers: {0}", _componentManagers));
         try {
-        	writeLockDeploy();
+            writeLockDeploy();
             Map<AssemblyId, DeployedAssembly> deployedMap = _persist.load();
             LOG.debug(_("Deployed assemblies: {0}", deployedMap.keySet()));
 
             Set<AssemblyId> available = new HashSet<AssemblyId>();
             Set<AssemblyId> availableWithDeployMark = new HashSet<AssemblyId>();
             // read available assemblies
-            {
-	            File deployDir = new File(_deployDir);
-                File[] files = deployDir.listFiles();
-                //Making isDoNotDeleteFile mandatory.
-                if (!deployDir.exists() || !isDoNotDeleteFileExists(files)) {
-                    NodeHealth.setUnHealthy();
-                    LOG.error("!!! FATAL ERROR !!! (Please check following error properly or Call Intalio Support for further assistance)  Deployment directory does not exists or it is not a directory: " + _deployDir);
-                    return;
-                } else {
-                    NodeHealth.setHealthy();
-                }
-                
+            if (files != null) {
                 for (int i = 0; i < files.length; ++i) {
                     if (files[i].isDirectory()) {
                         AssemblyId aid = parseAssemblyId(files[i].getName());
@@ -657,14 +657,16 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                     } else {
                         String name = files[i].getName();
                         if (name.endsWith(".deployed")) {
-                            availableWithDeployMark.add(parseAssemblyId(
-                                    name.substring(0, name.length() - ".deployed".length())));
+                            availableWithDeployMark.add(parseAssemblyId(name
+                                    .substring(
+                                            0,
+                                            name.length()
+                                                    - ".deployed".length())));
                         }
                     }
-                    
                 }
-                LOG.debug(_("Available assemblies on file system: {0}", available));
             }
+            LOG.debug(_("Available assemblies on file system: {0}", available));
 
             // Phase 1: undeploy missing assemblies
             Set<DeployedAssembly> undeploy = new HashSet<DeployedAssembly>();
@@ -672,10 +674,12 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             for (DeployedAssembly assembly : deployedMap.values()) {
                 // if helloWorld is removed but helloWorld.deployed is there,
                 // then undeploy.
-                // if you cannot find both it is possible the file system is in flux
+                // if you cannot find both it is possible the file system is in
+                // flux
                 // and you should not undeploy.
-                if (!available.contains(assembly.getAssemblyId()) && 
-                        availableWithDeployMark.contains(assembly.getAssemblyId()))
+                if (!available.contains(assembly.getAssemblyId())
+                        && availableWithDeployMark.contains(assembly
+                                .getAssemblyId()))
                     undeploy.add(assembly);
             }
 
@@ -690,51 +694,67 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             stopAndDispose(undeploy);
 
             for (DeployedAssembly assembly : undeploy) {
-                DeployedAssembly assemblyFromDatabase = deployedMap.get(assembly.getAssemblyId());
-                if( assemblyFromDatabase != null ) {
+                DeployedAssembly assemblyFromDatabase = deployedMap
+                        .get(assembly.getAssemblyId());
+                if (assemblyFromDatabase != null) {
                     assembly = assemblyFromDatabase;
                 }
-                
+
                 if (cluster.isCoordinator()) {
                     cluster.sendMessage(new UndeployedMessage(assembly));
                 }
 
                 DeploymentResult result = undeployAssembly(assembly);
                 if (result.isSuccessful())
-                    LOG.info(_("Undeployed assembly: {0}", assembly.getAssemblyId()));
+                    LOG.info(_("Undeployed assembly: {0}",
+                            assembly.getAssemblyId()));
                 else
-                    LOG.error(_("Error while undeploying assembly {0}: {1}", assembly.getAssemblyId()), result);
+                    LOG.error(
+                            _("Error while undeploying assembly {0}: {1}",
+                                    assembly.getAssemblyId()), result);
                 deployedMap.remove(assembly.getAssemblyId());
             }
 
             // phase 2: deploy new assemblies
-            File[] files = new File(_deployDir).listFiles();
-            for (int i = 0; i < files.length; ++i) {
-                if (files[i].isDirectory()) {
-                    AssemblyId aid = parseAssemblyId(files[i].getName());
-                    if (!isMarkedAsDeployed(aid) && !isMarkedAsInvalid(aid)) {
-                        try {
-                            // auto-detected assemblies are always activated after deployment
-                            DeploymentResult result = deployExplodedAssembly(files[i], true);
-                            if (result.isSuccessful()) {
-                                LOG.info(_("Deployed Assembly: {0}", result));
-                                clearMarkedAsInvalid(aid);
-                            } else {
-                                LOG.warn(_("Assembly deployment failed: {0}", result));
-                                setMarkedAsInvalid(aid, result.toString());
+            if (files != null) {
+                for (int i = 0; i < files.length; ++i) {
+                    if (files[i].isDirectory()) {
+                        AssemblyId aid = parseAssemblyId(files[i].getName());
+                        if (!isMarkedAsDeployed(aid) && !isMarkedAsInvalid(aid)) {
+                            try {
+                                // auto-detected assemblies are always activated
+                                // after deployment
+                                DeploymentResult result = deployExplodedAssembly(
+                                        files[i], true);
+                                if (result.isSuccessful()) {
+                                    LOG.info(_("Deployed Assembly: {0}", result));
+                                    clearMarkedAsInvalid(aid);
+                                } else {
+                                    LOG.warn(_(
+                                            "Assembly deployment failed: {0}",
+                                            result));
+                                    setMarkedAsInvalid(aid, result.toString());
+                                }
+                            } catch (Exception except) {
+                                LOG.error(
+                                        _("Error deploying assembly {0}. Assembly will be marked as invalid.",
+                                                files[i]), except);
+                                setMarkedAsInvalid(aid, except.toString());
                             }
-                        } catch (Exception except) {
-                            LOG.error(_("Error deploying assembly {0}. Assembly will be marked as invalid.", files[i]), except);
-                            setMarkedAsInvalid(aid, except.toString());
+                        } else if (isMarkedAsDeployed(aid)
+                                && !deployedMap.containsKey(aid)) {
+                            if (LOG.isWarnEnabled())
+                                LOG.warn(_("Inconsistent states found between the file system and the deployment service database!!"));
+                            if (LOG.isWarnEnabled())
+                                LOG.warn(_("A valid assembly for "
+                                        + aid
+                                        + " exists on the file system but missing in the database; You can re-deploy the assembly by removing the .deployed files for the assemblies."));
                         }
-                    } else if(isMarkedAsDeployed(aid) && !deployedMap.containsKey(aid)) {
-                        if(LOG.isWarnEnabled()) LOG.warn(_("Inconsistent states found between the file system and the deployment service database!!"));
-                        if(LOG.isWarnEnabled()) LOG.warn(_("A valid assembly for " + aid + " exists on the file system but missing in the database; You can re-deploy the assembly by removing the .deployed files for the assemblies."));
                     }
                 }
             }
         } finally {
-        	writeUnlockDeploy();
+            writeUnlockDeploy();
         }
     }
 
@@ -1144,9 +1164,11 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     }
 
     private boolean isDoNotDeleteFileExists(File[] files) {
-        for (File file : files) {
-            if (file.getName().equals(DO_NOT_DELETE_FILE_NAME)) {
-                return true;
+        if (files != null) {
+            for (File file : files) {
+                if (file.getName().equals(DO_NOT_DELETE_FILE_NAME)) {
+                    return true;
+                }
             }
         }
         return false;
