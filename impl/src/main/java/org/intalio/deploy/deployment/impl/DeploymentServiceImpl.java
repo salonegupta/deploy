@@ -29,6 +29,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -41,9 +46,9 @@ import org.intalio.deploy.deployment.ComponentId;
 import org.intalio.deploy.deployment.DeployedAssembly;
 import org.intalio.deploy.deployment.DeployedComponent;
 import org.intalio.deploy.deployment.DeploymentMessage;
+import org.intalio.deploy.deployment.DeploymentMessage.Level;
 import org.intalio.deploy.deployment.DeploymentResult;
 import org.intalio.deploy.deployment.DeploymentService;
-import org.intalio.deploy.deployment.DeploymentMessage.Level;
 import org.intalio.deploy.deployment.impl.DeployMBeanServer.NullDeployMBeanServer;
 import org.intalio.deploy.deployment.impl.clustering.ActivatedMessage;
 import org.intalio.deploy.deployment.impl.clustering.Cluster;
@@ -272,7 +277,6 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             if (_serviceState != null) {
                 throw new IllegalStateException("Service already initialized");
             }
-            ensureDeploymentDirExists();
             if (_dataSource == null) {
                 // by this time, if no datasource is set by the setter, use the default one
                 try {
@@ -641,24 +645,13 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
      * start newly deployed assemblies.
      */
     public void scan() {
-        LOG.debug(_("Scanning deployment directory {0}", _deployDir));
-
+        if (!(cluster.isCoordinator() && NodeHealth.isNodeHealthy())) {
+            return;
+        }
         File deployDir = new File(_deployDir);
         File[] files = deployDir.listFiles();
-        // Making isDoNotDeleteFile mandatory.
-        if (!deployDir.exists() || !isDoNotDeleteFileExists(files)) {
-            NodeHealth.setUnHealthy();
-            LOG.error("!!! FATAL ERROR !!! (Please check following error properly or Call Intalio Support for further assistance)  Deployment directory does not exists or it is not a directory: "
-                    + _deployDir);
-            return;
-        } else {
-            NodeHealth.setHealthy();
-        }
 
-        if (!cluster.isCoordinator()) {
-            return;
-        }
-
+        LOG.debug(_("Scanning deployment directory {0}", _deployDir));
         LOG.debug(_("Component managers: {0}", _componentManagers));
         try {
             writeLockDeploy();
@@ -709,6 +702,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                     undeploy.add(assembly);
             }
 
+            if(!NodeHealth.isNodeHealthy()) return;
             // stop and dispose all at once
             stopAndDispose(undeploy);
 
@@ -719,9 +713,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                     assembly = assemblyFromDatabase;
                 }
 
-                if (cluster.isCoordinator()) {
-                    cluster.sendMessage(new UndeployedMessage(assembly));
-                }
+                cluster.sendMessage(new UndeployedMessage(assembly));
 
                 DeploymentResult result = undeployAssembly(assembly);
                 if (result.isSuccessful())
@@ -735,6 +727,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             }
 
             // phase 2: deploy new assemblies
+            if(!NodeHealth.isNodeHealthy()) return;
             if (files != null) {
                 for (int i = 0; i < files.length; ++i) {
                     if (files[i].isDirectory()) {
@@ -1284,27 +1277,14 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 _serviceState = ServiceState.STARTED;
                 LOG.info(_("DeploymentService state is now STARTED"));
 
-                _timer.schedule(_scanTask, _scanPeriod * 1000, _scanPeriod * 1000);
+                _timer.schedule(_scanTask, _scanPeriod * 1000,
+                        _scanPeriod * 1000);
+                new Timer("Check Node health Timer", true).schedule(
+                        new CheckNodeHealthTask(), _scanPeriod * 1000,
+                        _scanPeriod * 1000);
             }
         } finally {
         	writeUnlockDeploy();
-        }
-    }
-
-
-    /**
-     * Ensure deployment directory exists
-     */
-    private void ensureDeploymentDirExists() {
-        if (_deployDir.contains("${"))
-            throw new IllegalStateException("Invalid deployment directory: " + _deployDir);
-        File dir = new File(_deployDir);
-        //Making isDoNotDeleteFile mandatory.
-        if (!dir.exists() || !dir.isDirectory() || !isDoNotDeleteFileExists(new File(_deployDir).listFiles())) {
-            NodeHealth.setUnHealthy();
-            LOG.error("!!! FATAL ERROR !!! (Please check following error properly or Call Intalio Support for further assistance)  Deployment directory does not exists or it is not a directory: " + _deployDir);
-        } else {
-            NodeHealth.setHealthy();
         }
     }
 
@@ -1557,6 +1537,59 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 scan();
             } catch (Exception e) {
                 LOG.error("Error while scanning deployment repository", e);
+            }
+        }
+    }
+
+    /**
+     * Recurring scan of the deployment directory every "scanPeriod"
+     * milliseconds
+     */
+    class CheckNodeHealthTask extends TimerTask {
+
+        public void run() {
+            Callable<Boolean> checkNodeHealth = new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    if (LOG.isDebugEnabled())
+                        LOG.debug("Checking the node health");
+
+                    Boolean isNodeHealthy = Boolean.TRUE;
+                    File deployDir = new File(_deployDir);
+                    File[] files = deployDir.listFiles();
+
+                    if (!deployDir.exists() || !isDoNotDeleteFileExists(files)) {
+                        isNodeHealthy = Boolean.FALSE;
+                    }
+                    return isNodeHealthy;
+                }
+            };
+
+            ExecutorService executorService = Executors.newFixedThreadPool(1);
+            Future<Boolean> future = executorService.submit(checkNodeHealth);
+            try {
+                Boolean isNodeHealthy = future.get(2, TimeUnit.SECONDS);
+                if (LOG.isDebugEnabled())
+                    LOG.debug("Retrived the node health: "
+                            + isNodeHealthy.toString());
+                if (isNodeHealthy) {
+                    if (!NodeHealth.isNodeHealthy()) {
+                        LOG.info("!!! Setting node to healthy state !!!");
+                        NodeHealth.setHealthy();
+                    }
+                } else {
+                    LOG.error("!!! FATAL ERROR !!! (Please check following error properly or Call Intalio Support for further assistance)  Deployment directory does not exists or it is not a directory: "
+                            + _deployDir);
+                    if (NodeHealth.isNodeHealthy()) {
+                        NodeHealth.setUnHealthy();
+                    }
+                }
+            } catch (Exception e) {
+                LOG.error("!!! FATAL ERROR !!! (Please check following error properly or Call Intalio Support for further assistance)  Deployment directory does not exists or it is not a directory: "
+                        + _deployDir);
+                if (NodeHealth.isNodeHealthy()) {
+                    NodeHealth.setUnHealthy();
+                }
             }
         }
     }
