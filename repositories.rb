@@ -7,6 +7,11 @@ repositories.remote = [
   "http://developers.ja-sig.org/maven2"
 ]
 
-repositories.release_to[:username] ||= "release"
-repositories.release_to[:url] ||= "sftp://www.intalio.org/var/www-org/public/maven2"
+repositories.release_to[:username] ||= "intalio"
+repositories.release_to[:password] ||= "intalio321"
+repositories.release_to[:url] ||= "sftp://bpms-build-blr.intalio.com/media/disk1/m2repo"
 repositories.release_to[:permissions] ||= 0664
+
+#repositories.release_to[:username] ||= "release"
+#repositories.release_to[:url] ||= "sftp://www.intalio.org/var/www-org/public/maven2"
+#repositories.release_to[:permissions] ||= 0664
