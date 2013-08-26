@@ -169,6 +169,7 @@ public class DeployClient implements DeploymentService {
             response = serviceClient.sendReceive(request);
         }catch(AxisFault e){
             LOG.error("Error during invoke " , e);
+            throw e;
         }
         finally {
             try {

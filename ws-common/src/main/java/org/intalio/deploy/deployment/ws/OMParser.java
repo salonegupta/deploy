@@ -67,6 +67,14 @@ public class OMParser {
         if (_element.getParent() != null) _element.detach();
     }
 
+    public OMParser(Iterator<OMElement> iter) {
+        _element = iter.next();
+        _element.build();
+        if (_element.getParent() != null) {
+            iter.remove();
+        }
+    }
+
     public OMElement getRequiredElement(QName parameter) {
         OMElement e = _element.getFirstChildWithName(parameter);
         if (e == null)
@@ -239,7 +247,7 @@ public class OMParser {
         OMParser responseMessages = new OMParser(response.getRequiredElement(MESSAGES));
         Iterator<OMElement> iter = responseMessages.getElements(MESSAGE);
         while (iter.hasNext()) {
-            OMParser message = new OMParser(iter.next());
+            OMParser message = new OMParser(iter);
 
             Level level = Level.valueOf(message.getRequiredString(MSG_LEVEL));
             String description = message.getOptionalString(MSG_DESCRIPTION);
@@ -268,7 +276,7 @@ public class OMParser {
         List<DeployedAssembly> assemblies = new ArrayList<DeployedAssembly>();
         Iterator<OMElement> iter = response.getElements(DEPLOYED_ASSEMBLY);
         while (iter.hasNext()) {
-            OMParser assembly = new OMParser(iter.next());
+            OMParser assembly = new OMParser(iter);
             
             String assemblyName = assembly.getRequiredString(ASSEMBLY_NAME);
             int assemblyVersion = Integer.parseInt( assembly.getRequiredString(ASSEMBLY_VERSION) );
@@ -279,7 +287,7 @@ public class OMParser {
 			OMParser responseComponents = new OMParser(assembly.getRequiredElement(DEPLOYED_COMPONENTS));
             Iterator<OMElement> iter2 = responseComponents.getElements(DEPLOYED_COMPONENT);
             while (iter2.hasNext()) {
-                OMParser component = new OMParser(iter2.next());
+                OMParser component = new OMParser(iter2);
                 
                 String componentName = component.getRequiredString(COMPONENT_NAME);
                 String componentDir = component.getRequiredString(COMPONENT_DIR);
