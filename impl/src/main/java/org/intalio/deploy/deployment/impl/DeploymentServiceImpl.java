@@ -147,6 +147,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     };
 
     private final ScanTask _scanTask = new ScanTask();
+    private final CheckNodeHealthTask _checkTask = new CheckNodeHealthTask();
+    private final ExecutorService _executorService = Executors.newFixedThreadPool(1);
 
     private DataSource _dataSource;
 
@@ -1134,8 +1136,9 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
                 _timer.schedule(_scanTask, _scanPeriod * 1000,
                         _scanPeriod * 1000);
-                new Timer("Check Node health Timer", true).schedule(
-                        new CheckNodeHealthTask(), _scanPeriod * 1000,
+
+                _timer.schedule(
+                        _checkTask, _scanPeriod * 1000,
                         _scanPeriod * 1000);
             }
         } finally {
@@ -1420,8 +1423,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 }
             };
 
-            ExecutorService executorService = Executors.newFixedThreadPool(1);
-            Future<Boolean> future = executorService.submit(checkNodeHealth);
+            Future<Boolean> future = _executorService.submit(checkNodeHealth);
             try {
                 Boolean isNodeHealthy = future.get(2, TimeUnit.SECONDS);
                 if (LOG.isDebugEnabled())
