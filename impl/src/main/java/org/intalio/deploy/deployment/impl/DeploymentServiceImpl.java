@@ -1541,6 +1541,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         }
     }
 
+    private final ExecutorService executorService = Executors.newFixedThreadPool(1);
     /**
      * Recurring scan of the deployment directory every "scanPeriod"
      * milliseconds
@@ -1565,7 +1566,6 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 }
             };
 
-            ExecutorService executorService = Executors.newFixedThreadPool(1);
             Future<Boolean> future = executorService.submit(checkNodeHealth);
             try {
                 Boolean isNodeHealthy = future.get(2, TimeUnit.SECONDS);
