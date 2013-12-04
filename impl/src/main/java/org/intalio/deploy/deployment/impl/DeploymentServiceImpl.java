@@ -98,6 +98,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     
     private String _dataSourceJndiPath = DEFAULT_DATASOURCE_JNDI_PATH;
 
+    private Boolean _hotDeployment;
     //
     // Internal state
     //
@@ -158,7 +159,15 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
     // the Null-Object pattern
     private DeployMBeanServer _deployMBeanServer = new NullDeployMBeanServer();
-    
+
+    public Boolean getHotDeployment() {
+        return _hotDeployment;
+    }
+
+    public void setHotDeployment(Boolean hotDeployment) {
+        this._hotDeployment = hotDeployment;
+    }
+
     //
     // Constructor
     //
@@ -645,7 +654,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
      * start newly deployed assemblies.
      */
     public void scan() {
-        if (!(cluster.isCoordinator() && NodeHealth.isNodeHealthy())) {
+        if (!(cluster.isCoordinator() && NodeHealth.isNodeHealthy() && _hotDeployment)) {
             return;
         }
         File deployDir = new File(_deployDir);
