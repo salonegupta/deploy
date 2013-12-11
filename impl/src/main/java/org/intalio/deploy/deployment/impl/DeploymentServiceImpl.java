@@ -58,6 +58,7 @@ import org.intalio.deploy.deployment.impl.clustering.RetiredMessage;
 import org.intalio.deploy.deployment.impl.clustering.SingleNodeCluster;
 import org.intalio.deploy.deployment.impl.clustering.UndeployedMessage;
 import org.intalio.deploy.deployment.spi.ComponentManager;
+import org.intalio.deploy.deployment.spi.ComponentManagerExtended;
 import org.intalio.deploy.deployment.spi.ComponentManagerLockAware;
 import org.intalio.deploy.deployment.spi.ComponentManagerResult;
 import org.intalio.deploy.deployment.spi.DeploymentServiceCallback;
@@ -102,6 +103,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     //
     // Internal state
     //
+    private String _user;
 
     enum ServiceState {
         INITIALIZED, CLUSTERIZING, STARTING, STARTED, STOPPING
@@ -524,7 +526,13 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                         ComponentManager manager = getComponentManager(componentType);
                         LOG.debug("ComponentManager resolved: " + manager);
                         try {
-                            ComponentManagerResult result = manager.deploy(component, f, activate);
+                            ComponentManagerResult result = null;
+                            if(manager instanceof ComponentManagerExtended) {
+                                ComponentManagerExtended mng = (ComponentManagerExtended) manager;
+                                result = mng.deploy(component, f, activate, _user);
+                            } else {
+                                result = manager.deploy(component, f, activate);
+                            }
                             results.addAll(component, componentType, result.getMessages());
                             // Sometimes, the component manager returns the same resources multiple times in the list
                             // let's take out the extra resource strings, yet keep the order
@@ -1736,6 +1744,13 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         return String.valueOf(missing);
     }
 
+    public String getUser() {
+        return _user;
+    }
+
+    public void setUser(String user) {
+        this._user = user;
+    }
 
 }
 

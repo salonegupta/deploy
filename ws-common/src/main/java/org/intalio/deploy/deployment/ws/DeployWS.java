@@ -17,6 +17,7 @@ import static org.intalio.deploy.deployment.ws.DeployWSConstants.ASSEMBLY_NAME;
 import static org.intalio.deploy.deployment.ws.DeployWSConstants.ASSEMBLY_VERSION;
 import static org.intalio.deploy.deployment.ws.DeployWSConstants.ZIP;
 import static org.intalio.deploy.deployment.ws.DeployWSConstants.PROCESS_NAME;
+import static org.intalio.deploy.deployment.ws.DeployWSConstants.USER;
 
 import java.io.File;
 import java.io.InputStream;
@@ -170,6 +171,8 @@ public class DeployWS {
         String assemblyName = request.getRequiredString(ASSEMBLY_NAME);
         boolean activate = request.getOptionalBoolean(ACTIVATE, true);
         InputStream zip = request.getInputStream(ZIP);
+        String user = request.getOptionalString(USER);
+        _deployService.setUser(user);
         DeploymentResult result = _deployService.deployAssembly(assemblyName, zip, activate);
         return OMParser.marshallDeploymentResult(result);
     }
