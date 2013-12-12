@@ -416,8 +416,22 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 File assemblyDir = createAssemblyDir(aid);
                 DeploymentResult result = null;
                 try {
-                    Utils.unzip(zip, assemblyDir);
-                    result = deployExplodedAssembly(assemblyDir, activate);
+                    boolean zipFound = Utils.unzip(zip, assemblyDir);
+
+                    if(!zipFound) {
+                        DeploymentMessage deploymentMessage = new DeploymentMessage(Level.ERROR,
+                                "Provided file is not a valid archive file");
+
+                        LOG.debug(deploymentMessage.getDescription());
+                        for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
+                            LOG.debug("\t"+ste.toString());
+                        }
+
+                        result = new DeploymentResult(aid, false, deploymentMessage);
+
+                    } else {
+                        result = deployExplodedAssembly(assemblyDir, activate);
+                    }
                 } finally {
                     if (result == null || !result.isSuccessful()) {
                         Utils.deleteRecursively(assemblyDir);
@@ -503,8 +517,15 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 
                 //*************************** Fix for BPMS-866 **************************************************
 
+                boolean filesProcessed = false;
+
                 try {
                     File[] files = assemblyDir.listFiles();
+
+                    if(files != null && files.length == 1 && files[0].isDirectory()
+                            && !files[0].getName().contains(".")) {
+                        files = files[0].listFiles();
+                    }
 
                     // deploy each component
                     for (File f : files) {
@@ -530,10 +551,12 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                             if(manager instanceof ComponentManagerExtended) {
                                 ComponentManagerExtended mng = (ComponentManagerExtended) manager;
                                 result = mng.deploy(component, f, activate, _user);
+                                filesProcessed = true;
                             } else {
                                 result = manager.deploy(component, f, activate);
                             }
                             results.addAll(component, componentType, result.getMessages());
+
                             // Sometimes, the component manager returns the same resources multiple times in the list
                             // let's take out the extra resource strings, yet keep the order
                             List<String> deployedResources = new ArrayList<String>();
@@ -558,8 +581,21 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                     LOG.error(msg, except);
                 }
 
+                if(!filesProcessed) {
+                    DeploymentMessage deploymentMessage = new DeploymentMessage(Level.ERROR,
+                            "No files found which can be eligible for processing in the archive");
+
+                    LOG.debug(deploymentMessage.getDescription());
+                    for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
+                        LOG.debug("\t"+ste.toString());
+                    }
+
+                    ComponentId component = new ComponentId(aid, "");
+                    results.add(component, "NA", deploymentMessage);
+                }
+
                 if (results.isSuccessful()) {
-                	
+
                 	/* The protocol has been changed after discussion with Alex.
                      * We now de-activate active versions when the the 'activate' is set to true.
                      * To have multiple active version for a new component manager,
@@ -573,10 +609,10 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                     } catch(Exception e) {
                         LOG.warn("Exeption during retiring old versions to activate the new one:", e);
                     }
-                    
+
                     // update persistent state
                     DeployedAssembly assembly = loadAssemblyState(aid);
-                    
+
                     _persist.retire(aid.getAssemblyName());
                     _persist.add(assembly, deployed);
 

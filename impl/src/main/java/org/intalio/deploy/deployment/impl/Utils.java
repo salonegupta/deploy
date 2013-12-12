@@ -50,11 +50,15 @@ public class Utils {
     /**
      * Unzip the given inputstream into a directory.
      */
-    public static void unzip(InputStream input, File dest) throws IOException {
+    public static boolean unzip(InputStream input, File dest) throws IOException {
         ZipInputStream zis = new ZipInputStream(input);
         ZipEntry entry;
+        boolean filesPresent = false;
+
         try {
             while ((entry = zis.getNextEntry()) != null) {
+                filesPresent = true;
+
                 if (entry.isDirectory()) {
                     File dir = new File(dest, entry.getName());
                     dir.mkdir();
@@ -80,6 +84,8 @@ public class Utils {
         } finally {
             zis.close();
         }
+
+        return filesPresent;
     }
     
     /**
