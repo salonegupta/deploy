@@ -100,6 +100,9 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     private String _dataSourceJndiPath = DEFAULT_DATASOURCE_JNDI_PATH;
 
     private Boolean _hotDeployment;
+
+    private int _fileSystemTimeout = 5; // in seconds
+
     //
     // Internal state
     //
@@ -1621,7 +1624,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
             Future<Boolean> future = executorService.submit(checkNodeHealth);
             try {
-                Boolean isNodeHealthy = future.get(2, TimeUnit.SECONDS);
+                Boolean isNodeHealthy = future.get(_fileSystemTimeout, TimeUnit.SECONDS);
                 if (LOG.isDebugEnabled())
                     LOG.debug("Retrived the node health: "
                             + isNodeHealthy.toString());
@@ -1638,8 +1641,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                     }
                 }
             } catch (Exception e) {
-                LOG.error("!!! FATAL ERROR !!! (Please check following error properly or Call Intalio Support for further assistance)  Deployment directory does not exists or it is not a directory: "
-                        + _deployDir);
+                LOG.warn("Filesystem is not responding, unable to read deploy directory. If this issue continues contact Intalio Support team");
                 if (NodeHealth.isNodeHealthy()) {
                     NodeHealth.setUnHealthy();
                 }
@@ -1786,6 +1788,14 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
     public void setUser(String user) {
         this._user = user;
+    }
+
+    public int getFileSystemTimeout() {
+        return _fileSystemTimeout;
+    }
+
+    public void setFileSystemTimeout(int fileSystemTimeout) {
+        this._fileSystemTimeout = fileSystemTimeout;
     }
 
 }
