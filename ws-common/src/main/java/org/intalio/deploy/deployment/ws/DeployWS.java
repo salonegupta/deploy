@@ -84,10 +84,10 @@ public class DeployWS {
                 try {
                     Collection<String> configPaths = new HashSet<String>(); 
 
-                    File jmxConfigFile = new File(_configDir, "jmx.xml");
-                    if( jmxConfigFile.exists() ) {
-                        configPaths.add(String.valueOf(jmxConfigFile.toURI()));
-                    }
+//                    File jmxConfigFile = new File(_configDir, "jmx.xml");
+//                    if( jmxConfigFile.exists() ) {
+//                        configPaths.add(String.valueOf(jmxConfigFile.toURI()));
+//                    }
                     File clusterConfigFile = new File(_configDir, "cluster-config.xml");
                     if( clusterConfigFile.exists() ) {
                         configPaths.add(String.valueOf(clusterConfigFile.toURI()));
