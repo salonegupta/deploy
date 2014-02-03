@@ -329,7 +329,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             }
             _serviceState = ServiceState.STARTING;
             LOG.info(_("DeploymentService state is now STARTING"));
-            checkRequiredComponentManagersAvailable(false);
+            checkRequiredComponentManagersAvailable();
         }
     }
 
@@ -1278,7 +1278,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
           return results.finalResult(); 	
     }
 
-    private void checkRequiredComponentManagersAvailable(boolean logError) {
+    private void checkRequiredComponentManagersAvailable() {
         boolean available = true;
         StringBuffer missing = new StringBuffer();
         for (String cm : _requiredComponentManagers) {
@@ -1301,9 +1301,6 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         }
 
         if (!available){
-            if(logError)
-                LOG.error(_("Deployment service not started. Waiting for component managers: {0}", missing));
-            else
                 LOG.info(_("Waiting for component managers: {0}", missing));
         }
     }
@@ -1561,8 +1558,13 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             if (_serviceState == ServiceState.CLUSTERIZING) {
                 throw new IllegalStateException(_("Not enough number of nodes are discovered in the cluster. Deployment service will be enabled when enough nodes are available."));
             } else if (_serviceState != ServiceState.STARTED) {
-                checkRequiredComponentManagersAvailable(true);
-                throw new IllegalStateException(_("Service not started.  Current state is {0}", _serviceState));
+                String missing = getMissingComponents();
+                if(missing != null && !missing.equals("")) {
+                    LOG.error(_("Deployment service not started. Waiting for component managers: {0}", missing));
+                    throw new IllegalStateException(_("Deployment service not started. Waiting for component managers: {0}", missing));
+                } else {
+                    throw new IllegalStateException(_("Service not started.  Current state is {0}", _serviceState));
+                }
             }
         }
     }
@@ -1703,7 +1705,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                     }
                 }
             }
-            checkRequiredComponentManagersAvailable(false);
+            checkRequiredComponentManagersAvailable();
         }
 
         public void unavailable(ComponentManager manager) {
