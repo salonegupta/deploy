@@ -185,10 +185,13 @@ public class QuorumBasedCluster implements CallBack, Cluster {
                         listener.onDeployed(msg.assembly, msg.activate);
                     } else if (obj instanceof UndeployedMessage) {
                         UndeployedMessage msg = (UndeployedMessage) obj;
-                        listener.onUndeployed(msg.assembly);
+                        listener.onUndeployed(msg.assembly, false);
                     } else if (obj instanceof RetiredMessage) {
                         RetiredMessage msg = (RetiredMessage) obj;
                         listener.onRetired(msg.assembly);
+                    } else if (obj instanceof ActivatedMessage){
+                        ActivatedMessage msg = (ActivatedMessage) obj;
+                        listener.onActivated(msg.assembly);
                     } else {
                         LOG.error(_("Unknown cluster message received: {0}", obj.toString()));
                     }

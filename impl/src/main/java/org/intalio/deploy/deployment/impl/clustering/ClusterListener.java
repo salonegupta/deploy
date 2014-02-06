@@ -21,8 +21,9 @@ public interface ClusterListener {
      * Called when the coordinator un-deploys an assembly.
      * 
      * @param assembly
+     * @param avoidCalling when set to true it avoids sending message to component manager.
      */
-    void onUndeployed(DeployedAssembly assembly);
+    void onUndeployed(DeployedAssembly assembly, boolean avoidCalling);
     
     /** 
      * Called when the coordinator activates the assembly version.

@@ -12,6 +12,6 @@ public class NullClusterListener implements ClusterListener {
     public void onRetired(DeployedAssembly assembly) {
     }
 
-    public void onUndeployed(DeployedAssembly assembly) {
+    public void onUndeployed(DeployedAssembly assembly, boolean avoidCalling) {
     }
 };

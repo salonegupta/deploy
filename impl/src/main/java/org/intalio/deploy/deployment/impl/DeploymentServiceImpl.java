@@ -85,6 +85,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     
     public static final String DEFAULT_DATASOURCE_JNDI_PATH = "java:/comp/env/jdbc/BPMSDB";
 
+    public static final String ODE_COMPONENT_MANAGER_NAME = "ode";
+
     public static String DO_NOT_DELETE_FILE_NAME = "doNotDeleteFile";
     
     //
@@ -621,7 +623,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
                     _persist.commitTransaction();
                     
-                    deployed(assembly, activate);
+                    deployed(assembly, activate, true);
                     
                     cluster.sendMessage(new DeployedMessage(assembly, activate));
                     
@@ -674,10 +676,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         }
         
         stopAndDispose(aid);
-        if (cluster.isCoordinator()) {
-            cluster.sendMessage(new UndeployedMessage(assembly));
-        }
-        onUndeployed(assembly);
+        cluster.sendMessage(new UndeployedMessage(assembly));
+        onUndeployed(assembly, true);
         
         try {
             writeLockDeploy();
@@ -928,19 +928,22 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     }
 
     public void onDeployed(DeployedAssembly assembly, boolean activate) {
-        deployed(assembly, activate);
+        deployed(assembly, activate, false);
 
         initializeAndStart(assembly.getAssemblyId());
     }
     
-    private void deployed(DeployedAssembly assembly, boolean activate) {
+    private void deployed(DeployedAssembly assembly, boolean activate, boolean avoidCalling) {
     	_deployMBeanServer.registerAssembly(assembly);
         
         for (DeployedComponent dc : assembly.getDeployedComponents()) {
             try {
                 if(LOG.isDebugEnabled()) LOG.debug(_("Deployed component {0}", dc));
-                ComponentManager manager = getComponentManager(dc.getComponentManagerName());
-                manager.deployed(dc.getComponentId(), new File(dc.getComponentDir()), dc.getDeployedResources(), activate);
+                String componentManagerName = dc.getComponentManagerName();
+                if (!(avoidCalling && componentManagerName.equals(ODE_COMPONENT_MANAGER_NAME))) {
+                    ComponentManager manager = getComponentManager(componentManagerName);
+                    manager.deployed(dc.getComponentId(), new File(dc.getComponentDir()), dc.getDeployedResources(), activate);
+                }
                 
                 _deployMBeanServer.registerComponent(assembly, dc);
             } catch (Exception except) {
@@ -951,12 +954,15 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         }
     }
 
-    public void onUndeployed(DeployedAssembly assembly) {
+    public void onUndeployed(DeployedAssembly assembly, boolean avoidCalling) {
         for (DeployedComponent dc : assembly.getDeployedComponents()) {
             try {
                 if(LOG.isDebugEnabled()) LOG.debug(_("Undeployed component {0}", dc));
-                ComponentManager manager = getComponentManager(dc.getComponentManagerName());
-                manager.undeployed(dc.getComponentId(), new File(dc.getComponentDir()), dc.getDeployedResources());
+                String componentManagerName = dc.getComponentManagerName();
+                if(!(avoidCalling && componentManagerName.equals(ODE_COMPONENT_MANAGER_NAME))){
+                    ComponentManager manager = getComponentManager(componentManagerName);
+                    manager.undeployed(dc.getComponentId(), new File(dc.getComponentDir()), dc.getDeployedResources());
+                }
             } catch (Exception except) {
                 String msg = _("Error during undeployment notification of component {0}: {1}", dc.getComponentId(), except);
                 if(LOG.isErrorEnabled()) LOG.error(msg, except);
@@ -1322,8 +1328,11 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             // let the runtime ComponentManagers be aware of the deployed components
             for( DeployedAssembly assembly : assemblies ) {
                 for( DeployedComponent component : assembly.getDeployedComponents() ) {
-                    ComponentManager manager = getComponentManager(component.getComponentManagerName());
-                    manager.deployed(component.getComponentId(), new File(component.getComponentDir()), component.getDeployedResources(), assembly.isActive());
+                    String componentManagerName = component.getComponentManagerName();
+                    if(!componentManagerName.equals(ODE_COMPONENT_MANAGER_NAME)){
+                        ComponentManager manager = getComponentManager(componentManagerName);
+                        manager.deployed(component.getComponentId(), new File(component.getComponentDir()), component.getDeployedResources(), assembly.isActive());
+                    }
 
                     _deployMBeanServer.registerComponent(assembly, component);
                 }
