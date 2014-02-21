@@ -270,6 +270,19 @@ public class DeployClient implements DeploymentService {
         OMParser response = invoke(DEACTIVATE_PROCESS_REQUEST.getLocalPart(), request);
         return OMParser.parseDeploymentResult(response);
 	}
+
+    @Override
+    public DeploymentResult deployAssembly(String assemblyName,
+            InputStream zip, boolean activate, String user)
+            throws RemoteException {
+        OMElement request = element(DEPLOY_REQUEST);
+        setAuthentication(request);
+        request.addChild( elementText(USER, user) );
+        request.addChild( elementText(ASSEMBLY_NAME, assemblyName) );
+        request.addChild( elementBinary(ZIP, zip) );
+        OMParser response = invoke(DEPLOY_REQUEST.getLocalPart(), request);
+        return OMParser.parseDeploymentResult(response);
+    }
 	
 	
 }

@@ -105,11 +105,6 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
     private int _fileSystemTimeout = 5; // in seconds
 
-    //
-    // Internal state
-    //
-    private String _user;
-
     enum ServiceState {
         INITIALIZED, CLUSTERIZING, STARTING, STARTED, STOPPING
     }
@@ -371,17 +366,9 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         }
     }
 
-    //
-    // Operations
-    //
-    public DeploymentResult deployAssembly(String assemblyName, InputStream zip) {
-        return deployAssembly(assemblyName, zip, true);
-    }
-
-    /**
-     * Deploy a packaged (zipped) assembly
-     */
-    public DeploymentResult deployAssembly(String assemblyName, InputStream zip, boolean activate) {
+    @Override
+    public DeploymentResult deployAssembly(String assemblyName,
+            InputStream zip, boolean activate, String user) {
         if( LOG.isDebugEnabled() ) LOG.debug("DEPLOYMENT.deployAssembly(" + assemblyName + ", replaceExistingAssemblies=" + replaceExistingAssemblies + ", activate=" + activate + ")");
 
         assertStarted();
@@ -394,7 +381,6 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
         try {
             writeLockDeploy();
-        	
             AssemblyId aid = versionAssemblyId(assemblyName);
             if (replaceExistingAssemblies) {
                 Collection<DeployedAssembly> deployed = getDeployedAssemblies();
@@ -435,7 +421,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                         result = new DeploymentResult(aid, false, deploymentMessage);
 
                     } else {
-                        result = deployExplodedAssembly(assemblyDir, activate);
+                        result = deployExplodedAssembly(assemblyDir, activate, user);
                     }
                 } finally {
                     if (result == null || !result.isSuccessful()) {
@@ -451,12 +437,34 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         } finally {
             writeUnlockDeploy();
         }
+
+    }
+
+    //
+    // Operations
+    //
+    public DeploymentResult deployAssembly(String assemblyName, InputStream zip) {
+        return deployAssembly(assemblyName, zip, true);
+    }
+
+    /**
+     * Deploy a packaged (zipped) assembly
+     */
+    public DeploymentResult deployAssembly(String assemblyName, InputStream zip, boolean activate) {
+        return deployAssembly(assemblyName, zip, true, null);
     }
 
     /**
      * Deploy an exploded assembly
      */
     public DeploymentResult deployExplodedAssembly(File assemblyDir, boolean activate) {
+        return deployExplodedAssembly(assemblyDir,  activate, null);
+    }
+
+    /**
+     * Deploy an exploded assembly
+     */
+    private DeploymentResult deployExplodedAssembly(File assemblyDir, boolean activate, String user) {
         File parent = assemblyDir.getParentFile();
         while (true) {
             if (parent == null)
@@ -555,7 +563,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                             ComponentManagerResult result = null;
                             if(manager instanceof ComponentManagerExtended) {
                                 ComponentManagerExtended mng = (ComponentManagerExtended) manager;
-                                result = mng.deploy(component, f, activate, _user);
+                                result = mng.deploy(component, f, activate, user);
                                 filesProcessed = true;
                             } else {
                                 result = manager.deploy(component, f, activate);
@@ -1796,14 +1804,6 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         missing.addAll(_requiredComponentManagers);
         missing.removeAll(_componentManagers.keySet());
         return String.valueOf(missing);
-    }
-
-    public String getUser() {
-        return _user;
-    }
-
-    public void setUser(String user) {
-        this._user = user;
     }
 
     public int getFileSystemTimeout() {

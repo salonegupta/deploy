@@ -34,6 +34,11 @@ public interface DeploymentService extends Remote {
     DeploymentResult deployAssembly(String assemblyName, InputStream zip) throws RemoteException;
 
     /**
+     * Deploy a packaged (zipped) assembly
+     */
+    DeploymentResult deployAssembly(String assemblyName, InputStream zip, boolean activate, String user ) throws RemoteException;
+
+    /**
      * Undeploy an assembly 
      */
     DeploymentResult undeployAssembly(AssemblyId assemblyId) throws RemoteException;

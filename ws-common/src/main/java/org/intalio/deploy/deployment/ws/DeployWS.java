@@ -172,8 +172,7 @@ public class DeployWS {
         boolean activate = request.getOptionalBoolean(ACTIVATE, true);
         InputStream zip = request.getInputStream(ZIP);
         String user = request.getOptionalString(USER);
-        _deployService.setUser(user);
-        DeploymentResult result = _deployService.deployAssembly(assemblyName, zip, activate);
+        DeploymentResult result = _deployService.deployAssembly(assemblyName, zip, activate, user);
         return OMParser.marshallDeploymentResult(result);
     }
     
