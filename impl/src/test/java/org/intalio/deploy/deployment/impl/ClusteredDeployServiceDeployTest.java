@@ -48,7 +48,7 @@ public class ClusteredDeployServiceDeployTest extends TestCase {
     
     public void setUp() throws Exception {
         PropertyConfigurator.configure(new File(TestUtils.getTestBase(), "log4j.properties").getAbsolutePath());
-        Utils.deleteRecursively(_deployDir);
+        Utils.forceDelete(_deployDir);
 
         XmlBeanFactory factory = new XmlBeanFactory(new ClassPathResource("clustered-test.xml"));
         cluster = (ClusterProxy)factory.getBean("cluster");
@@ -339,7 +339,7 @@ public class ClusteredDeployServiceDeployTest extends TestCase {
         assertTrue(f.exists() && f.isDirectory());
 
         // delete assembly directory, scan should now undeploy assembly
-        Utils.deleteRecursively(f);
+        Utils.forceDelete(f);
         int i=0;
         while (i<5) {
             wait(1);

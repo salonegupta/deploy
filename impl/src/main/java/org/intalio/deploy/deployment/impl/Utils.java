@@ -27,10 +27,16 @@ import java.util.regex.PatternSyntaxException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.io.FileDeleteStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Utility methods
  */
 public class Utils {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Utils.class);
 
     /**
      * Copies the contents of the <code>InputStream</code> into the <code>OutputStream</code>.
@@ -89,19 +95,14 @@ public class Utils {
     }
     
     /**
-     * Delete a file/directory, recursively.
+     * Forcefully deletes file/directory.
      */
-    public static void deleteRecursively(File file) {
-        if (file.exists()) {
-            if (file.isDirectory()) {
-                File[] files = file.listFiles();
-                for (int i = 0; i < files.length; ++i) {
-                    deleteRecursively(files[i]);
-                }
-            }
-            if (file.exists() && !file.delete()) { 
-                throw new IllegalStateException("Unable to delete: "+ file);
-            }
+    public static void forceDelete(File file) {
+        try {
+            FileDeleteStrategy.FORCE.delete(file);
+        } catch (IOException e) {
+            LOG.error("Not able to delete " + file + " got:" + e);
+            throw new RuntimeException(e);
         }
     }
 

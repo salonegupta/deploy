@@ -392,7 +392,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                         try {
                             stopAndDispose(da.getAssemblyId());
                             DeploymentResult result = undeployAssembly(da);
-                            Utils.deleteRecursively(new File(da.getAssemblyDir()));
+                            Utils.forceDelete(new File(da.getAssemblyDir()));
                             if (!result.isSuccessful()) {
                                 return result;
                             }
@@ -428,7 +428,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                     }
                 } finally {
                     if (result == null || !result.isSuccessful()) {
-                        Utils.deleteRecursively(assemblyDir);
+                        Utils.forceDelete(assemblyDir);
                     }
                 }
                 return result;
@@ -505,7 +505,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 try {
                     Utils.copyRecursively(assemblyDir, d);
                 } catch (IOException except) {
-                    Utils.deleteRecursively(d);
+                    Utils.forceDelete(d);
                     throw new RuntimeException(except);
                 }
             }
@@ -697,7 +697,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 return undeployAssembly(assembly);
             } finally {
                 try {
-                    Utils.deleteRecursively(new File(assembly.getAssemblyDir()));
+                    Utils.forceDelete(new File(assembly.getAssemblyDir()));
                 } catch (Exception e) {
                     LOG.warn(_("Exception while undeploying assembly {0}: {1}", assembly.getAssemblyId(), e.toString()));
                 }
