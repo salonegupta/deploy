@@ -47,7 +47,7 @@ public class DeployServiceDeployTest extends TestCase {
     public void setUp() throws Exception {
         PropertyConfigurator.configure(new File(TestUtils.getTestBase(), "log4j.properties").getAbsolutePath());
         
-        Utils.deleteRecursively(_deployDir);
+        Utils.forceDelete(_deployDir);
         
         manager = new MockComponentManager("MockEngine");
 
@@ -403,7 +403,7 @@ public class DeployServiceDeployTest extends TestCase {
         assertTrue(f.exists() && f.isDirectory());
 
         // delete assembly directory, scan should now undeploy assembly
-        Utils.deleteRecursively(f);
+        Utils.forceDelete(f);
         int i=0;
         while (i<5) {
             wait(1);
@@ -433,7 +433,7 @@ public class DeployServiceDeployTest extends TestCase {
         assertTrue(f.exists() && f.isDirectory());
 
         // delete assembly directory, scan should now undeploy assembly
-        Utils.deleteRecursively(f);
+        Utils.forceDelete(f);
         Utils.deleteFile(new File(_deployDir, "assembly1.deployed"));
         wait(5);
         assertEquals(1, service.getDeployedAssemblies().size());
