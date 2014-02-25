@@ -134,6 +134,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     //
 
     private Timer _timer;
+    private Timer _NodeHealthtimer;
 
     private final StartTask _startTask = new StartTask();
 
@@ -300,6 +301,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             
             _persist = new Persistence(new File(_deployDir), _dataSource);
             _timer = new Timer("Deployment Service Timer", true);
+            _NodeHealthtimer =  new Timer("Check Node Health Timer", true);
             _serviceState = ServiceState.INITIALIZED;
             LOG.info(_("DeploymentService state is now INITIALIZED(replaceExistingAssemblies=" + replaceExistingAssemblies + ")."));
         }
@@ -353,6 +355,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             Collection<DeployedAssembly> assemblies = getDeployedAssemblies();
             if (_serviceState == ServiceState.STARTED) {
                 _timer.cancel();
+                _NodeHealthtimer.cancel();
                 cluster.shutdown();
             }
             _serviceState = ServiceState.STOPPING;
@@ -1353,9 +1356,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
                 _timer.schedule(_scanTask, _scanPeriod * 1000,
                         _scanPeriod * 1000);
-                new Timer("Check Node health Timer", true).schedule(
-                        new CheckNodeHealthTask(), _scanPeriod * 1000,
-                        _scanPeriod * 1000);
+                _NodeHealthtimer.schedule(new CheckNodeHealthTask(),
+                        _scanPeriod * 1000, _scanPeriod * 1000);
             }
         } finally {
         	writeUnlockDeploy();
