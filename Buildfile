@@ -60,7 +60,7 @@ define "deploy" do
     
     # require live Axis2 instance
     if ENV["LIVE"] == 'yes'
-      LIVE_ENDPOINT = "http://localhost:8080/axis2/services/DeploymentService"
+      LIVE_ENDPOINT = "http://localhost:8080/intalio/ode/processes/DeploymentService"
     end
     
     if defined? LIVE_ENDPOINT
