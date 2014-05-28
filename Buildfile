@@ -60,7 +60,7 @@ define "deploy" do
     
     # require live Axis2 instance
     if ENV["LIVE"] == 'yes'
-      LIVE_ENDPOINT = "http://localhost:8080/axis2/services/DeploymentService"
+      LIVE_ENDPOINT = "http://localhost:8080/intalio/ode/processes/DeploymentService"
     end
     
     if defined? LIVE_ENDPOINT
@@ -77,6 +77,6 @@ define "deploy" do
   desc "Deployment Web-Service"
   define "ws-service" do
 #    compile.with projects("api", "ws-common"), AXIOM, AXIS2_LIB, SLF4J.values, SPRING[:core], STAX_API
-    package(:aar).with :libs => [ projects("api", "impl", "ws-common"), SLF4J.values, SPRING[:core], SHOAL, APACHE_COMMONS[:dbcp], APACHE_COMMONS[:pool], APACHE_COMMONS[:io], APACHE_DERBY, APACHE_DERBY_NET, BPMS_COMMON ]
+    package(:aar).with :libs => [ ]
   end
 end
