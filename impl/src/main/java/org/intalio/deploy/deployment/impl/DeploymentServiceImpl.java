@@ -107,7 +107,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     
     private String _dataSourceJndiPath = DEFAULT_DATASOURCE_JNDI_PATH;
 
-    private Boolean _hotDeployment;
+    private Boolean _hotDeployment = true;
 
     private int _fileSystemTimeout = 5; // in seconds
 
