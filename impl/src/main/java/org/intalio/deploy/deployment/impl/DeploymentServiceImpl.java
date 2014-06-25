@@ -20,8 +20,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.rmi.Remote;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -76,6 +78,8 @@ import com.intalio.bpms.common.node.health.NodeHealth;
  */
 @ManagedResource(objectName="intalio:module=DeploymentService,service=DeploymentService")
 public class DeploymentServiceImpl implements DeploymentService, Remote, ClusterListener {
+    private static final String ODE_EXTENSION = ".ode";
+
     private static final Logger LOG = LoggerFactory.getLogger(DeploymentServiceImpl.class);
 
     // Constants
@@ -543,6 +547,18 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                         files = files[0].listFiles();
                     }
 
+                    Arrays.sort(files, new Comparator<File>() {
+                        public int compare(File f1, File f2) {
+                            if (f1.getName().endsWith(ODE_EXTENSION)) {
+                                return -1;
+                            } else if (f2.getName().endsWith(ODE_EXTENSION)) {
+                                return 1;
+                            } else {
+                                return 0;
+                            }
+                        }
+                    });
+
                     // deploy each component
                     for (File f : files) {
                         if (!f.isDirectory()) {
@@ -585,6 +601,9 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                             }
                             DeployedComponent deployedComponent = new DeployedComponent(component, f.getAbsolutePath(), componentType, deployedResources);
                             deployed.add(deployedComponent);
+                            if (!results.isSuccessful()) {
+                                break;
+                            }
                         } catch (Exception except) {
                             String msg = _("Exception while deploying component {0}: {1}", componentName, except.getLocalizedMessage());
                             results.add(component, componentType, error(msg));
