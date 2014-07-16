@@ -247,14 +247,14 @@ public class DeployWS {
     /**
      * @return the current instance of DeployWS.
      */
-    public static DeployWS getInstance() {
+    static DeployWS getInstance() {
         return _instance;
     }
     
     /**
      * Stops the deployment listener.
      */
-    public void stop() {
+    void stop() {
         _deployService.stop();
         _instance = null;
     }

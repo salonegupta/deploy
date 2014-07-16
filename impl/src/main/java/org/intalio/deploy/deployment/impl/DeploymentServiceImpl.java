@@ -76,7 +76,7 @@ import com.intalio.bpms.common.node.health.NodeHealth;
 /**
  * Deployment service
  */
-@ManagedResource(objectName="intalio:module=DeploymentService,service=DeploymentService")
+@ManagedResource(objectName="intalio:module=DeploymentService,service=DeployService")
 public class DeploymentServiceImpl implements DeploymentService, Remote, ClusterListener {
     private static final String ODE_EXTENSION = ".ode";
 
