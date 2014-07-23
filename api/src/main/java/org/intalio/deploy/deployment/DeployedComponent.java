@@ -14,6 +14,7 @@ package org.intalio.deploy.deployment;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -24,7 +25,8 @@ import java.util.List;
 public class DeployedComponent implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    final static List<String> EMPTY_RESOURCE_LIST = new ArrayList<String>(0); 
+    final static List<String> EMPTY_RESOURCE_LIST = new ArrayList<String>(0);
+    private final static String PIPA ="pipa";
 
     final ComponentId _componentId;
     final String _componentDir;
@@ -55,6 +57,9 @@ public class DeployedComponent implements Serializable {
     }
     
     public List<String> getDeployedResources() {
+        if(PIPA.equalsIgnoreCase(_componentManagerName)) {
+            verifyPipaResources();
+        }
     	return _deployedResources;
     }
     
@@ -73,5 +78,26 @@ public class DeployedComponent implements Serializable {
 
     public int hashCode() {
         return super.hashCode() + _componentManagerName.hashCode() * 13;
+    }
+
+    /**
+     * To maintain versioning of PIPA form we are appending assembly id to form
+     * url from 7.5.x version, I case of migration it might be that there is not
+     * proper data to handle migration issue in this method we are verifying
+     * that assembly id is properly appended.
+     * 
+     */
+    private void verifyPipaResources() {
+        String resourceSuffix = "?" + _componentId.getAssemblyId().toString();
+        Iterator<String> itr = _deployedResources.iterator();
+        int index = 0;
+        while (itr.hasNext()) {
+            String deployedResource = itr.next();
+            if (!deployedResource.endsWith(resourceSuffix)) {
+                deployedResource = deployedResource + resourceSuffix;
+                _deployedResources.set(index, deployedResource);
+            }
+            index++;
+        }
     }
 }
