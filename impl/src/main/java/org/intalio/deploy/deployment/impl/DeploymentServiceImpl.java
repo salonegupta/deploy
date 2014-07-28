@@ -412,7 +412,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 DeploymentResult result = null;
                 try {
                     boolean zipFound = Utils.unzip(zip, assemblyDir);
-
+                    zipFound = zipFound && verifyExplodedAssembly(assemblyDir);
                     if(!zipFound) {
                         DeploymentMessage deploymentMessage = new DeploymentMessage(Level.ERROR,
                                 "Provided file is not a valid archive file");
@@ -442,6 +442,25 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             writeUnlockDeploy();
         }
 
+    }
+
+    /**
+     * This method checks whether exploded assembly contains ode component in
+     * process or not.
+     * 
+     * @param assemblyDir
+     * @return
+     */
+    private boolean verifyExplodedAssembly(File assemblyDir) {
+        if (assemblyDir != null) {
+            if (assemblyDir.exists()) {
+                for (String file : assemblyDir.list()) {
+                    if (file.endsWith(ODE_EXTENSION))
+                        return true;
+                }
+            }
+        }
+        return false;
     }
 
     //
