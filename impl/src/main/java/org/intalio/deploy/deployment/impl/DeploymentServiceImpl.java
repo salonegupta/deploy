@@ -503,6 +503,12 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             }
         }
 
+        if(!verifyExplodedAssembly(assemblyDir)) {
+            throw new IllegalArgumentException(
+                    "Assembly directory is not in proper format, it does not have ode component. AssemblyDir="
+                            + assemblyDir);
+        }
+
         AssemblyId aid;
         boolean local = assemblyDir.getParentFile().equals(new File(_deployDir));
         if (local) {
