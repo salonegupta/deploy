@@ -56,6 +56,7 @@ import org.intalio.deploy.deployment.impl.clustering.ActivatedMessage;
 import org.intalio.deploy.deployment.impl.clustering.Cluster;
 import org.intalio.deploy.deployment.impl.clustering.ClusterListener;
 import org.intalio.deploy.deployment.impl.clustering.DeployedMessage;
+import org.intalio.deploy.deployment.impl.clustering.QuorumBasedCluster;
 import org.intalio.deploy.deployment.impl.clustering.RetiredMessage;
 import org.intalio.deploy.deployment.impl.clustering.SingleNodeCluster;
 import org.intalio.deploy.deployment.impl.clustering.UndeployedMessage;
@@ -1618,7 +1619,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 }
             }
             
-            if (_serviceState == ServiceState.CLUSTERIZING) {
+            if (cluster instanceof QuorumBasedCluster && !((QuorumBasedCluster) cluster).isClusterReady()) {
                 throw new IllegalStateException(_("Not enough number of nodes are discovered in the cluster. Deployment service will be enabled when enough nodes are available."));
             } else if (_serviceState != ServiceState.STARTED) {
                 String missing = getMissingComponents();

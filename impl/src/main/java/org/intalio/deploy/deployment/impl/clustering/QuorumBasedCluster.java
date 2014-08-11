@@ -252,7 +252,7 @@ public class QuorumBasedCluster implements CallBack, Cluster {
     }
 
     @ManagedAttribute
-    private boolean isClusterReady() {
+    public boolean isClusterReady() {
         return gms.getGroupHandle().getCurrentCoreMembers().size() > clusterSize / 2;
     }
     
