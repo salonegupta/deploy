@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.Collection;
+import java.util.Map;
 
 
 /**
@@ -84,4 +85,6 @@ public interface DeploymentService extends Remote {
     public DeploymentResult activateProcess(AssemblyId assemblyId , String processName) throws RemoteException;
     
     public DeploymentResult getAssemblyVersion(String assemblyName) throws RemoteException;
+
+    Map<String,String> getClusterInfo() throws RemoteException;
 }

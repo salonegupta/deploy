@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.rmi.RemoteException;
 import java.util.Collection;
+import java.util.Map;
 
 import javax.xml.namespace.QName;
 
@@ -283,6 +284,13 @@ public class DeployClient implements DeploymentService {
         OMParser response = invoke(DEPLOY_REQUEST.getLocalPart(), request);
         return OMParser.parseDeploymentResult(response);
     }
-	
-	
+
+    @Override
+    public Map<String, String> getClusterInfo() throws RemoteException {
+        OMElement request = element(GET_CLUSTER_INFO);
+        setAuthentication(request);
+        OMParser response = invoke(GET_CLUSTER_INFO.getLocalPart(), request);
+        return OMParser.parseClusterInfo(response);
+    }
+
 }

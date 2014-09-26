@@ -96,4 +96,11 @@ public class DeployWSConstants {
     public static final QName DEACTIVATE_REQUEST = new QName(DEPLOY_NS.getNamespaceURI(), "retireAssembly", DEPLOY_NS_PREFIX);
     public static final QName DEACTIVATE_PROCESS_REQUEST = new QName(DEPLOY_NS.getNamespaceURI(), "retireProcess", DEPLOY_NS_PREFIX);
     public static final QName ACTIVATE_PROCESS_REQUEST = new QName(DEPLOY_NS.getNamespaceURI(), "activateProcess", DEPLOY_NS_PREFIX);
+
+    /*Cluster Info Response */
+    public static final QName GET_CLUSTER_INFO = new QName(DEPLOY_NS.getNamespaceURI(), "getClusterInfo", DEPLOY_NS_PREFIX);
+    public static final QName CLUSTER_INFO = new QName(DEPLOY_NS.getNamespaceURI(), "clusterInfo", DEPLOY_NS_PREFIX);
+    public static final QName PROPERTY = new QName(DEPLOY_NS.getNamespaceURI(), "property", DEPLOY_NS_PREFIX);
+    public static final QName NAME = new QName(DEPLOY_NS.getNamespaceURI(), "name", DEPLOY_NS_PREFIX);
+    public static final QName VALUE = new QName(DEPLOY_NS.getNamespaceURI(), "value", DEPLOY_NS_PREFIX);
 }

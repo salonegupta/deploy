@@ -32,14 +32,16 @@ import static org.intalio.deploy.deployment.ws.DeployWSConstants.MSG_LEVEL;
 import static org.intalio.deploy.deployment.ws.DeployWSConstants.MSG_LOCATION;
 import static org.intalio.deploy.deployment.ws.DeployWSConstants.MSG_RESOURCE;
 import static org.intalio.deploy.deployment.ws.DeployWSConstants.OM_FACTORY;
-import static org.intalio.deploy.deployment.ws.DeployWSConstants.SUCCESS;
+import static org.intalio.deploy.deployment.ws.DeployWSConstants.*;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.activation.DataHandler;
 import javax.xml.namespace.QName;
@@ -304,5 +306,16 @@ public class OMParser {
         
         return assemblies;
     }
-    
+
+    public static Map<String,String> parseClusterInfo(OMParser response) {
+        Map<String,String> clusterInfo = new HashMap<String,String>();
+        Iterator<OMElement> iter = response.getElements(PROPERTY);
+        while(iter.hasNext()) {
+            OMParser component = new OMParser(iter);
+            String key = component.getRequiredString(NAME);
+            String value =  component.getRequiredString(VALUE);
+            clusterInfo.put(key, value);
+        }
+        return clusterInfo;
+    }
 }

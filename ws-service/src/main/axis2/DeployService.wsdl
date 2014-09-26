@@ -131,6 +131,24 @@
                </xs:sequence>
             </xs:complexType>
          </xs:element>
+	<xs:element name="getClusterInfo">
+		<xs:complexType>
+			<xs:sequence />
+		</xs:complexType>
+	</xs:element>
+	<xs:complexType name="property">
+		<xs:sequence>
+			<xs:element name="name" type="xs:string" />
+			<xs:element name="value" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="clusterInfo">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="property" type="deploy:property" maxOccurs="unbounded" minOccurs="1" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
       </xs:schema>
    </wsdl:types>
 
@@ -182,6 +200,12 @@
    <wsdl:message name="deployAssemblyResponse">
       <wsdl:part name="parameters" element="deploy:deployAssemblyResponse" />
    </wsdl:message>
+   <wsdl:message name="clusterInfoRequest">
+      <wsdl:part name="parameters" element="deploy:getClusterInfo" />
+   </wsdl:message>
+   <wsdl:message name="clusterInfo">
+      <wsdl:part name="parameters" element="deploy:clusterInfo" />
+   </wsdl:message>
 
    <wsdl:portType name="DeployServicePortType">
       <wsdl:operation name="retireAssembly">
@@ -215,6 +239,10 @@
       <wsdl:operation name="deployAssembly">
          <wsdl:input message="ns:deployAssemblyRequest" wsaw:Action="urn:deployAssembly" />
          <wsdl:output message="ns:deployAssemblyResponse" wsaw:Action="urn:deployAssemblyResponse" />
+      </wsdl:operation>
+      <wsdl:operation name="getClusterInfo">
+         <wsdl:input message="ns:clusterInfoRequest" wsaw:Action="urn:clusterInfoRequest" />
+         <wsdl:output message="ns:clusterInfo" wsaw:Action="urn:clusterInfo" />
       </wsdl:operation>
    </wsdl:portType>
 
@@ -285,6 +313,15 @@
       </wsdl:operation>
       <wsdl:operation name="deployAssembly">
          <soap:operation soapAction="urn:deployAssembly" style="document" />
+         <wsdl:input>
+            <soap:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap:body use="literal" />
+         </wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="getClusterInfo">
+         <soap:operation soapAction="urn:getClusterInfo" style="document" />
          <wsdl:input>
             <soap:body use="literal" />
          </wsdl:input>
@@ -368,6 +405,15 @@
             <soap12:body use="literal" />
          </wsdl:output>
       </wsdl:operation>
+      <wsdl:operation name="getClusterInfo">
+         <soap12:operation soapAction="urn:getClusterInfo" style="document" />
+         <wsdl:input>
+            <soap12:body use="literal" />
+         </wsdl:input>
+         <wsdl:output>
+            <soap12:body use="literal" />
+         </wsdl:output>
+      </wsdl:operation>
    </wsdl:binding>
 
    <wsdl:binding name="DeployServiceHttpBinding" type="ns:DeployServicePortType">
@@ -437,6 +483,15 @@
       </wsdl:operation>
       <wsdl:operation name="deployAssembly">
          <http:operation location="deployAssembly" />
+         <wsdl:input>
+            <mime:content type="application/xml" part="parameters" />
+         </wsdl:input>
+         <wsdl:output>
+            <mime:content type="application/xml" part="parameters" />
+         </wsdl:output>
+      </wsdl:operation>
+      <wsdl:operation name="getClusterInfo">
+         <http:operation location="getClusterInfo" />
          <wsdl:input>
             <mime:content type="application/xml" part="parameters" />
          </wsdl:input>

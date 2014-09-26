@@ -19,6 +19,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.rmi.Remote;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1859,6 +1860,24 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
     public void setFileSystemTimeout(int fileSystemTimeout) {
         this._fileSystemTimeout = fileSystemTimeout;
+    }
+
+    @Override
+    public Map<String, String> getClusterInfo() {
+        HashMap<String, String> clusterInfo = new HashMap<String, String>();
+        boolean isClustered = false;
+        if (cluster instanceof QuorumBasedCluster) {
+            QuorumBasedCluster qCluster = (QuorumBasedCluster) cluster;
+            isClustered = true;
+            clusterInfo.put("clusterSize",
+                    Integer.toString(qCluster.getClusterSize()));
+            clusterInfo.put("groupName", qCluster.getGroupName());
+            clusterInfo.put("serverId", qCluster.getServerId());
+            clusterInfo.put("activeMembers", qCluster.getActiveMembers());
+            clusterInfo.put("inActiveMembers", qCluster.getInactiveMembers());
+        }
+        clusterInfo.put("isClustered", Boolean.toString(isClustered));
+        return clusterInfo;
     }
 
 }
