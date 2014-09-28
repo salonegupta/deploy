@@ -88,6 +88,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
     public static final String ODE_COMPONENT_MANAGER_NAME = "ode";
 
+    private static final String ODE_EXTENSION = ".ode";
+
     public static String DO_NOT_DELETE_FILE_NAME = "doNotDeleteFile";
     
     //
