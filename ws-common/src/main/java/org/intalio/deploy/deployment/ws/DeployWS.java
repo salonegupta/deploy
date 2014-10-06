@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 
 import org.apache.axiom.om.OMElement;
 import org.apache.axis2.AxisFault;
@@ -242,6 +243,19 @@ public class DeployWS {
         AssemblyId aid = new AssemblyId(assemblyName,assemblyVersion);
         DeploymentResult result = _deployService.retireProcess(aid,processName);
         return OMParser.marshallDeploymentResult(result);
+    }
+
+    public OMElement getClusterInfo(OMElement requestEl) throws AxisFault {
+        checkInitialized();
+        Map<String,String> result = _deployService.getClusterInfo();
+        OMElement response = OMParser.createElement(DeployWSConstants.CLUSTER_INFO);
+        for (Map.Entry<String,String> entry : result.entrySet()) {
+            OMElement prop = OMParser.createElement(DeployWSConstants.PROPERTY);
+            OMParser.addTextElement(prop,DeployWSConstants.NAME, entry.getKey());
+            OMParser.addTextElement(prop,DeployWSConstants.VALUE, entry.getValue());
+            response.addChild(prop);
+        }
+        return response;
     }
 
     /**

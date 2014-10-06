@@ -19,11 +19,11 @@ public class SingleNodeCluster implements Cluster {
     private List<String> members = new ArrayList<String>();
     
     public SingleNodeCluster() {
-        members.add("myself in a single node configuration");
+        members.add("SingleNodeServer");
     }
     
     public String getServerId() {
-        return "myself in a single node configuration";
+        return "SingleNodeServer";
     }
 
     public void start() {
