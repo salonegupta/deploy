@@ -84,6 +84,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
     private static final Logger LOG = LoggerFactory.getLogger(DeploymentServiceImpl.class);
 
+    private static DeploymentServiceImpl deploymentServiceImpl;
     // Constants
     public static final String DEFAULT_DEPLOY_DIR = "${org.intalio.deploy.configDirectory}/../deploy";
 
@@ -184,6 +185,9 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     public DeploymentServiceImpl() {
     }
 
+    public static DeploymentServiceImpl getInstance() {
+        return deploymentServiceImpl;
+    }
     //
     // Accessors / Setters
     //
@@ -309,6 +313,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
             _timer = new Timer("Deployment Service Timer", true);
             _NodeHealthtimer =  new Timer("Check Node Health Timer", true);
             _serviceState = ServiceState.INITIALIZED;
+            deploymentServiceImpl = this;
             LOG.info(_("DeploymentService state is now INITIALIZED(replaceExistingAssemblies=" + replaceExistingAssemblies + ")."));
         }
     }
@@ -1339,6 +1344,18 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
           }   
           cluster.sendMessage(new RetiredMessage(assembly));
           return results.finalResult(); 	
+    }
+
+    /**
+     * Notifies other nodes of the cluster for BRE decision table update.
+     * 
+     * @param assemblyName
+     * @param assemblyVersion
+     */
+    public void sendBREUpdateMessage(String assemblyName, int assemblyVersion) {
+        AssemblyId assemblyId = new AssemblyId(assemblyName, assemblyVersion);
+        DeployedAssembly deployedAssembly = loadAssemblyState(assemblyId);
+        cluster.sendMessage(new DeployedMessage(deployedAssembly, true));
     }
 
     private void checkRequiredComponentManagersAvailable() {
