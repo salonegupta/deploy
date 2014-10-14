@@ -81,6 +81,7 @@ import com.intalio.bpms.common.node.health.NodeHealth;
 @ManagedResource(objectName="intalio:module=DeploymentService,service=DeployService")
 public class DeploymentServiceImpl implements DeploymentService, Remote, ClusterListener {
     private static final String ODE_EXTENSION = ".ode";
+    private static final String BAM_EXTENSION = ".webreport";
 
     private static final Logger LOG = LoggerFactory.getLogger(DeploymentServiceImpl.class);
 
@@ -465,7 +466,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         if (assemblyDir != null) {
             if (assemblyDir.exists()) {
                 for (String file : assemblyDir.list()) {
-                    if (file.endsWith(ODE_EXTENSION))
+                    if (file.endsWith(ODE_EXTENSION)
+                            || file.endsWith(BAM_EXTENSION))
                         return true;
                 }
             }
@@ -574,11 +576,6 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 try {
                     File[] files = assemblyDir.listFiles();
 
-                    if(files != null && files.length == 1 && files[0].isDirectory()
-                            && !files[0].getName().contains(".")) {
-                        files = files[0].listFiles();
-                    }
-
                     Arrays.sort(files, new Comparator<File>() {
                         public int compare(File f1, File f2) {
                             if (f1.getName().endsWith(ODE_EXTENSION)) {
@@ -618,6 +615,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                                 filesProcessed = true;
                             } else {
                                 result = manager.deploy(component, f, activate);
+                                filesProcessed = true;
                             }
                             results.addAll(component, componentType, result.getMessages());
 
