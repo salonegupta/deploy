@@ -91,6 +91,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
     private static final String ODE_EXTENSION = ".ode";
 
+    private static final String BAM_EXTENSION = ".webreport";
+
     public static String DO_NOT_DELETE_FILE_NAME = "doNotDeleteFile";
     
     //
@@ -458,7 +460,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         if (assemblyDir != null) {
             if (assemblyDir.exists()) {
                 for (String file : assemblyDir.list()) {
-                    if (file.endsWith(ODE_EXTENSION))
+                    if (file.endsWith(ODE_EXTENSION)
+                            || file.endsWith(BAM_EXTENSION))
                         return true;
                 }
             }
@@ -567,11 +570,6 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 try {
                     File[] files = assemblyDir.listFiles();
 
-                    if(files != null && files.length == 1 && files[0].isDirectory()
-                            && !files[0].getName().contains(".")) {
-                        files = files[0].listFiles();
-                    }
-
                     // deploy each component
                     for (File f : files) {
                         if (!f.isDirectory()) {
@@ -599,6 +597,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                                 filesProcessed = true;
                             } else {
                                 result = manager.deploy(component, f, activate);
+                                filesProcessed = true;
                             }
                             results.addAll(component, componentType, result.getMessages());
 
