@@ -24,7 +24,7 @@ public class SimpleGMSSample implements CallBack {
 		try {
 			sgs.runSimpleSample();
 		} catch (GMSException e) {
-			logger.log(Level.SEVERE, "Exception occured while joining group:"
+			logger.log(Level.SEVERE, "Exception occurred while joining group:"
 					+ e);
 		}
 	}
@@ -124,10 +124,10 @@ public class SimpleGMSSample implements CallBack {
 			signal.release();
 		} catch (SignalAcquireException e) {
 			logger.log(Level.WARNING,
-					"Exception occured while acquiring signal" + e);
+					"Exception occurred while acquiring signal" + e);
 		} catch (SignalReleaseException e) {
 			logger.log(Level.WARNING,
-					"Exception occured while releasing signal" + e);
+					"Exception occurred while releasing signal" + e);
 		}
 
 	}
