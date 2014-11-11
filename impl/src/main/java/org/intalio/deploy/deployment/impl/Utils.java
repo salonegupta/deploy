@@ -99,6 +99,7 @@ public class Utils {
      */
     public static void forceDelete(File file) {
         try {
+            file.setWritable(true);
             FileDeleteStrategy.FORCE.delete(file);
         } catch (IOException e) {
             LOG.error("Not able to delete " + file + " got:" + e);
