@@ -416,11 +416,11 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 }
             }
 
+            DeploymentResult result = null;
             try {
                 setMarkedAsInvalid(aid, _("Deploying {0} ...", aid));
 
                 File assemblyDir = createAssemblyDir(aid);
-                DeploymentResult result = null;
                 try {
                     boolean zipFound = Utils.unzip(zip, assemblyDir);
                     zipFound = zipFound && verifyExplodedAssembly(assemblyDir);
@@ -445,6 +445,10 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 }
                 return result;
             } catch (Exception except) {
+                if(result != null){
+                    result.getMessages().add(error(except.getMessage()));
+                    return result;
+                }
                 throw new RuntimeException(except);
             } finally {
                 clearMarkedAsInvalid(aid);
