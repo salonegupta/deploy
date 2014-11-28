@@ -19,7 +19,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.rmi.Remote;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -80,6 +79,7 @@ import com.intalio.bpms.common.node.health.NodeHealth;
  */
 @ManagedResource(objectName="intalio:module=DeploymentService,service=DeployService")
 public class DeploymentServiceImpl implements DeploymentService, Remote, ClusterListener {
+    private static final String BPMSDB_JNDI_SYSTEM_PROPERTY_KEY = "com.intalio.bpms.jndi.bpmsdb";
     private static final String ODE_EXTENSION = ".ode";
     private static final String BAM_EXTENSION = ".webreport";
 
@@ -107,7 +107,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
     private List<String> _requiredComponentManagers = new ArrayList<String>();
     
-    private String _dataSourceJndiPath = DEFAULT_DATASOURCE_JNDI_PATH;
+    private String _dataSourceJndiPath;
 
     private Boolean _hotDeployment = true;
 
@@ -304,7 +304,8 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 // by this time, if no datasource is set by the setter, use the default one
                 try {
                     InitialContext initialContext = new InitialContext();
-                    _dataSource = (DataSource)initialContext.lookup(_dataSourceJndiPath);
+                    
+                    _dataSource = (DataSource)initialContext.lookup(getDataSourceJndiPath());
                 } catch (NamingException e) {
                     throw new IllegalStateException("Couldn't find datasource through jndi");
                 }
@@ -1897,6 +1898,15 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         }
         clusterInfo.put("isClustered", Boolean.toString(isClustered));
         return clusterInfo;
+    }
+
+    public String getDataSourceJndiPath() {
+        if (null != _dataSourceJndiPath) {
+            return _dataSourceJndiPath;
+        }
+        _dataSourceJndiPath = System.getProperty(
+                BPMSDB_JNDI_SYSTEM_PROPERTY_KEY, DEFAULT_DATASOURCE_JNDI_PATH);
+        return _dataSourceJndiPath;
     }
 
 }
