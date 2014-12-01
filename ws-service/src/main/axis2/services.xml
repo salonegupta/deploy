@@ -10,6 +10,7 @@
     <operation name="getDeployedAssemblies">
         <messageReceiver class="org.apache.axis2.receivers.RawXMLINOutMessageReceiver"/>
     </operation>
+    <parameter name="modifyUserWSDLPortAddress">true</parameter>
     <parameter name="ServiceClass">org.intalio.deploy.deployment.ws.DeployWS</parameter>
 </service>
 
