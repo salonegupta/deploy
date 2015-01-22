@@ -1526,7 +1526,26 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
     }
 
     private File getAssemblyDir(AssemblyId aid) {
-        return new File(_deployDir, toDirName(aid));
+        String dirName = toDirName(aid);
+        boolean isSuffixNumber = true;
+        int indexForDot = dirName.lastIndexOf(".");
+        int indexForHyphen = dirName.lastIndexOf("-");
+
+        if (indexForHyphen != -1 && indexForDot < indexForHyphen) {
+            String suffix = dirName.substring(indexForHyphen + 1,
+                    dirName.length());
+            try {
+                Integer.parseInt(suffix);
+            } catch (NumberFormatException e) {
+                isSuffixNumber = false;
+            }
+
+            if (isSuffixNumber) {
+                dirName = dirName.substring(0, indexForHyphen) + "." + suffix;
+            }
+        }
+
+        return new File(_deployDir, dirName);
     }
 
     private boolean exist(AssemblyId aid) {
