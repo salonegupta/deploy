@@ -23,8 +23,10 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1073,8 +1075,18 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         boolean success = true;
 
         // Phase 1: Initialize all components of all assemblies
+
+        LinkedList<DeployedAssembly> sortedAssemblies = new LinkedList<DeployedAssembly>();
+        for(DeployedAssembly assembly : assemblies) {
+            if(assembly.isActive()) {
+                sortedAssemblies.addLast(assembly);
+            } else {
+                sortedAssemblies.addFirst(assembly);
+            }
+        }
+
         Map<DeployedComponent, DeployedAssembly> initialized = new HashMap<DeployedComponent, DeployedAssembly>();
-        for (DeployedAssembly assembly : assemblies) {
+        for (DeployedAssembly assembly : sortedAssemblies) {
             for (DeployedComponent dc : assembly.getDeployedComponents()) {
                 try {
                     LOG.debug(_("Initialize component {0}", dc));
@@ -1092,7 +1104,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
         if (success) {
             // Phase 2: Startup all components
-            for (DeployedAssembly assembly : assemblies) {
+            for (DeployedAssembly assembly : sortedAssemblies) {
                 for (DeployedComponent dc : assembly.getDeployedComponents()) {
                     try {
                         LOG.debug(_("Start component {0}", dc));
