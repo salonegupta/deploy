@@ -135,12 +135,12 @@ public class QuorumBasedCluster implements CallBack, Cluster {
             gms.join();
             LOG.info(_("Coordinator: {0}", isCoordinator()));
             LOG.info(">>> gms members : " + gms.getGroupHandle().getAllCurrentMembers() + " for " + gms.getGroupHandle().getCurrentCoreMembers());
-            synchronized( clusterSize ) {
-                while( !isClusterReady() ) {
-                    clusterSize.wait(1000);
-                    warmUp();
-                }
-            }
+//            synchronized( clusterSize ) {
+//                while( !isClusterReady() ) {
+//                    clusterSize.wait(1000);
+//                    warmUp();
+//                }
+//            }
         } catch (Exception e) {
             LOG.error("Error while starting cluster lifecycle manager", e);
         }
