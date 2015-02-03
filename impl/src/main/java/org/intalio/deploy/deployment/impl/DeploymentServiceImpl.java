@@ -19,11 +19,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.rmi.Remote;
-import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -392,6 +390,28 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
         try {
             writeLockDeploy();
+
+            boolean isSuffixNumber = true;
+            int indexForHyphen = assemblyName.lastIndexOf("-");
+
+            if (indexForHyphen != -1) {
+                String suffix = assemblyName.substring(indexForHyphen + 1,
+                        assemblyName.length());
+                try {
+                    Integer.parseInt(suffix);
+                } catch (NumberFormatException e) {
+                    isSuffixNumber = false;
+                }
+
+                if (isSuffixNumber) {
+                    Exception except = new Exception(
+                            _("Assembly name cannot end with a number after character ('-'): {0}",
+                                    assemblyName));
+                    LOG.error(except.getMessage());
+                    return convertToResult(except, newAssemblyId(assemblyName));
+                }
+            }
+
             AssemblyId aid = versionAssemblyId(assemblyName);
             if (replaceExistingAssemblies) {
                 Collection<DeployedAssembly> deployed = getDeployedAssemblies();
@@ -831,6 +851,29 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                         AssemblyId aid = parseAssemblyId(files[i].getName());
                         if (!isMarkedAsDeployed(aid) && !isMarkedAsInvalid(aid)) {
                             try {
+                                boolean isSuffixNumber = true;
+                                int indexForHyphen = files[i].getName().lastIndexOf("-");
+
+                                if (indexForHyphen != -1) {
+                                    String suffix = files[i].getName().substring(indexForHyphen + 1,
+                                            files[i].getName().length());
+                                    try {
+                                        Integer.parseInt(suffix);
+                                    } catch (NumberFormatException e) {
+                                        isSuffixNumber = false;
+                                    }
+
+                                    if (isSuffixNumber) {
+                                        Exception except = new Exception(
+                                                _("Assembly name cannot end with a number after character ('-'): {0}",
+                                                        files[i].getName()));
+                                        LOG.error(except.getMessage());
+                                        setMarkedAsInvalid(aid,
+                                                except.getMessage());
+                                        return;
+                                    }
+                                }
+
                                 // auto-detected assemblies are always activated
                                 // after deployment
                                 DeploymentResult result = deployExplodedAssembly(
