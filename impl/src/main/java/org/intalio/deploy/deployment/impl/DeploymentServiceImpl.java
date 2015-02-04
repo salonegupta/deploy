@@ -1718,9 +1718,7 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 }
             }
             
-            if (cluster instanceof QuorumBasedCluster && !((QuorumBasedCluster) cluster).isClusterReady()) {
-                throw new IllegalStateException(_("Not enough number of nodes are discovered in the cluster. Deployment service will be enabled when enough nodes are available."));
-            } else if (_serviceState != ServiceState.STARTED) {
+            if (_serviceState != ServiceState.STARTED) {
                 String missing = getMissingComponents();
                 if(missing != null && !missing.equals("")) {
                     LOG.error(_("Deployment service not started. Waiting for component managers: {0}", missing));

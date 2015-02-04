@@ -108,7 +108,7 @@ public class QuorumBasedCluster implements CallBack, Cluster {
             LOG.debug(_("Coordinator: {0}", groupLeader));
         }
 
-        return isClusterReady() &&  serverId.equals(groupLeader);
+        return serverId.equals(groupLeader);
     }
 
     @ManagedAttribute
