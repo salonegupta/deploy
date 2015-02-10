@@ -1965,8 +1965,6 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         if (cluster instanceof QuorumBasedCluster) {
             QuorumBasedCluster qCluster = (QuorumBasedCluster) cluster;
             isClustered = true;
-            clusterInfo.put("clusterSize",
-                    Integer.toString(qCluster.getClusterSize()));
             clusterInfo.put("groupName", qCluster.getGroupName());
             clusterInfo.put("serverId", qCluster.getServerId());
             clusterInfo.put("activeMembers", qCluster.getActiveMembers());

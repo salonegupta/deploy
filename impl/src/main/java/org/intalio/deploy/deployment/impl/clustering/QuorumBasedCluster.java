@@ -50,8 +50,6 @@ public class QuorumBasedCluster implements CallBack, Cluster {
     
     private Properties clusterProperties = new Properties();
 
-    private Integer clusterSize = 1;
-    
     private ClusterListener listener = new NullClusterListener();
     
     @ManagedAttribute
@@ -109,15 +107,6 @@ public class QuorumBasedCluster implements CallBack, Cluster {
         }
 
         return serverId.equals(groupLeader);
-    }
-
-    @ManagedAttribute
-    public int getClusterSize() {
-        return clusterSize;
-    }
-
-    public void setClusterSize(int clusterSize) {
-        this.clusterSize = clusterSize;
     }
 
     public void start() {
@@ -202,9 +191,6 @@ public class QuorumBasedCluster implements CallBack, Cluster {
                     LOG.info( "Members in cluster: " + gms.getGroupHandle().getAllCurrentMembers());
                     LOG.info(_("Coordinator: {0}", isCoordinator()));
                     
-                    synchronized(clusterSize) {
-                        clusterSize.notify();
-                    }
                 } else {
                     LOG.info(_("Notification received from {0}: {1}", signal.getMemberToken(), signal.toString()));
                     LOG.info(_("Coordinator: {0}", isCoordinator()));
@@ -251,11 +237,6 @@ public class QuorumBasedCluster implements CallBack, Cluster {
         return obj;
     }
 
-    @ManagedAttribute
-    public boolean isClusterReady() {
-        return gms.getGroupHandle().getCurrentCoreMembers().size() > clusterSize / 2;
-    }
-    
     @ManagedAttribute
     public int getNumberOfCurrentMembers() {
         return gms.getGroupHandle().getCurrentCoreMembers().size();
