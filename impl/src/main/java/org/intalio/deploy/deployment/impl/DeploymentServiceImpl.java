@@ -780,6 +780,21 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
                 }
             }
         } finally {
+            try {
+                File directory = new File(assembly.getAssemblyDir());
+                File invalid = getInvalidFile(aid);
+
+                if (directory.exists() && !invalid.exists()) {
+                    setMarkedAsInvalid(
+                            aid,
+                            "Due to lock issues with files in this package, "
+                                    + "system is not able to delete them. Please delete the package manually.");
+                }
+            } catch (Exception e) {
+                LOG.warn(_("Exception while undeploying assembly {0}: {1}",
+                        assembly.getAssemblyId(), e.toString()));
+            }
+
         	writeUnlockDeploy();
         }
     }
@@ -1243,7 +1258,6 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
 
     public DeploymentResult activate(AssemblyId assemblyId) {
         TemporaryResult results = new TemporaryResult(assemblyId);
-        
         DeployedAssembly assembly = loadAssemblyState(assemblyId);
         DeployedAssembly assemblyFromDatabase = _persist.load().get(assemblyId);
         if( assemblyFromDatabase != null ) {
@@ -1265,14 +1279,12 @@ public class DeploymentServiceImpl implements DeploymentService, Remote, Cluster
         
         return results.finalResult(); 
     }
-    
     /**
      * Activates the process of the assembly specified by the given assembly id. 
      *
      */    
     public DeploymentResult activateProcess(AssemblyId assemblyId, String processName) {
      TemporaryResult results = new TemporaryResult(assemblyId);
-        
         DeployedAssembly assembly = loadAssemblyState(assemblyId);
         DeployedAssembly assemblyFromDatabase = _persist.load().get(assemblyId);
         if( assemblyFromDatabase != null ) {
